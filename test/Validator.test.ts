@@ -5,12 +5,12 @@ import { TransitionRegistry } from '@src/base/TransitionRegistry';
 import { Validator } from '@src/base/Validator';
 import { SMValidationException } from '@src/base/exceptions';
 import { BasicTransition } from '@src/base/BasicTransition';
-import { InitialState } from '@src/states/InitialState';
-import { TerminalState } from '@src/states/TerminalState';
-import { UserDefinedState } from '@src/states/UserDefinedState';
-import { ChoiceState } from '@src/states/ChoiceState';
-import { ForkState } from '@src/states/ForkState';
-import { BasicJoinState } from '@src/states/BasicJoinState';
+import { InitialState } from '@src/base/InitialState';
+import { TerminalState } from '@src/base/TerminalState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
+import { ChoiceState } from '@src/base/ChoiceState';
+import { ForkState } from '@src/base/ForkState';
+import { BasicJoinState } from '@src/base/BasicJoinState';
 
 const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;

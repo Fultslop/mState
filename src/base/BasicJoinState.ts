@@ -1,7 +1,7 @@
 import { StateType } from '@src/model/State';
 import type { StateStartEvent, StateId, TransitionId } from '../model/types';
 import type { JoinState } from '@src/model/JoinState';
-import { BaseState } from './BaseState';
+import { BaseState } from './BasicState';
 
 export class BasicJoinState extends BaseState implements JoinState {
   private readonly _received: Map<TransitionId, StateStartEvent> = new Map();

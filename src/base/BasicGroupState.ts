@@ -2,7 +2,7 @@ import type { StateId, TransitionId } from '../model/types';
 import { StateType } from '@src/model/State';
 import type { GroupState } from '@src/model/GroupState';
 import type { State } from '@src/model/State';
-import { BaseState } from './BaseState';
+import { BaseState } from './BasicState';
 import type { Transition } from '@src/model/Transition';
 
 export class BasicGroupState extends BaseState implements GroupState {

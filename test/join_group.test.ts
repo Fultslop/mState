@@ -1,9 +1,9 @@
 import { StateType } from '@src/model/State';
 import type { StateId, TransitionId } from '@src/model/types';
 import type { StateStartEvent } from '@src/model/types';
-import { BasicJoinState } from '@src/states/BasicJoinState';
-import { BasicGroupState } from '@src/states/BasicGroupState';
-import { UserDefinedState } from '@src/states/UserDefinedState';
+import { BasicJoinState } from '@src/base/BasicJoinState';
+import { BasicGroupState } from '@src/base/BasicGroupState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
 
 const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;

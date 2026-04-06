@@ -1,6 +1,6 @@
 import type { StateId } from '../model/types';
 import { StateType } from '@src/model/State';
-import { BaseState } from './BaseState';
+import { BaseState } from './BasicState';
 
 export class InitialState extends BaseState {
   readonly initialPayload: unknown;

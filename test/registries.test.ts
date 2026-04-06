@@ -1,7 +1,7 @@
 import { SMValidationException } from '@src/base/exceptions';
 import { StateRegistry } from '@src/base/StateRegistry';
 import { TransitionRegistry } from '@src/base/TransitionRegistry';
-import { UserDefinedState } from '@src/states/UserDefinedState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
 import type { StateId, TransitionId } from '@src/model/types';
 import { BasicTransition } from '@src/base/BasicTransition';
 

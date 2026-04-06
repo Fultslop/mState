@@ -7,10 +7,10 @@ import { TransitionRegistry } from '@src/base/TransitionRegistry';
 import { TransitionRouter } from '@src/base/TransitionRouter';
 import { SMRuntimeException } from '@src/base/exceptions';
 import { BasicTransition } from '@src/base/BasicTransition';
-import { TerminalState } from '@src/states/TerminalState';
-import { UserDefinedState } from '@src/states/UserDefinedState';
-import { ChoiceState } from '@src/states/ChoiceState';
-import { ForkState } from '@src/states/ForkState';
+import { TerminalState } from '@src/base/TerminalState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
+import { ChoiceState } from '@src/base/ChoiceState';
+import { ForkState } from '@src/base/ForkState';
 
 const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;

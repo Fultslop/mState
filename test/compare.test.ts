@@ -1,7 +1,7 @@
 import { BasicStateMachine } from '@src/base/BasicStateMachine';
 import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
 import { StateStatus, StateType } from '@src/model/State';
-import { UserDefinedState } from '@src/states/UserDefinedState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
 import { compareStates, compareTransitions, compareStateMachines } from '@src/base/compare';
 import type { StateId, TransitionId, StateMachineId } from '@src/model/types';
 import { BasicTransition } from '@src/base/BasicTransition';

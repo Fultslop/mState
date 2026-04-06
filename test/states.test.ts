@@ -1,10 +1,10 @@
 import { StateType, StateStatus } from "@src/model/State";
 import type { StateId } from '@src/model/types';
-import { InitialState } from '@src/states/InitialState';
-import { TerminalState } from '@src/states/TerminalState';
-import { UserDefinedState } from '@src/states/UserDefinedState';
-import { ChoiceState } from '@src/states/ChoiceState';
-import { ForkState } from '@src/states/ForkState';
+import { InitialState } from '@src/base/InitialState';
+import { TerminalState } from '@src/base/TerminalState';
+import { UserDefinedState } from '@src/base/UserDefinedState';
+import { ChoiceState } from '@src/base/ChoiceState';
+import { ForkState } from '@src/base/ForkState';
 
 const id = 's1' as StateId;
 
