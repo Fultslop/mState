@@ -94,13 +94,15 @@ describe('StateMachine construction', () => {
 
   it('validate() throws SMValidationException for invalid graph', () => {
     const sm = new BasicStateMachine(smid('test'));
-    sm.createState(sid('s1')); // no initial, invalid
+    const builder = new StateMachineBuilder(sm);
+    builder.createState(sid('s1')); // no initial, invalid
     expect(() => sm.validate()).toThrow(SMValidationException);
   });
 
   it('getStateIds and getTransitionIds return current ids', () => {
     const sm = new BasicStateMachine(smid('test'));
-    sm.createState(sid('a'));
+    const builder = new StateMachineBuilder(sm);
+    builder.createState(sid('a'));
     expect(sm.getStateIds()).toContain(sid('a'));
     sm.removeState(sid('a'));
     expect(sm.getStateIds()).not.toContain(sid('a'));
@@ -110,18 +112,20 @@ describe('StateMachine construction', () => {
 // Helper: minimal valid SM (init → s1 → term)
 function makeMinimalSM() {
   const sm = new BasicStateMachine(smid('sm'));
-  const init = sm.createInitial(sid('init'));
-  const s1   = sm.createState(sid('s1'));
-  const term = sm.createTerminal(sid('term'));
-  sm.createTransition(tid('t0'), init.id, s1.id);
-  sm.createTransition(tid('t1'), s1.id, term.id);
+  const builder = new StateMachineBuilder(sm);
+  const init = builder.createInitial(sid('init'));
+  const s1   = builder.createState(sid('s1'));
+  const term = builder.createTerminal(sid('term'));
+  builder.createTransition(tid('t0'), init.id, s1.id);
+  builder.createTransition(tid('t1'), s1.id, term.id);
   return { sm, init, s1, term };
 }
 
 describe('StateMachine.start()', () => {
   it('throws SMRuntimeException when no Initial state exists', () => {
     const sm = new BasicStateMachine(smid('sm'));
-    sm.createState(sid('s1'));
+    const builder = new StateMachineBuilder(sm);
+    builder.createState(sid('s1'));
     expect(() => sm.start()).toThrow(SMRuntimeException);
   });
 
@@ -171,13 +175,14 @@ describe('StateMachine.onStopped()', () => {
 
   it('routes to next state on non-terminal transition', () => {
     const sm = new BasicStateMachine(smid('sm'));
-    const init = sm.createInitial(sid('init'));
-    const s1   = sm.createState(sid('s1'));
-    const s2   = sm.createState(sid('s2'));
-    const term = sm.createTerminal(sid('term'));
-    sm.createTransition(tid('t0'), init.id, s1.id);
-    sm.createTransition(tid('t1'), s1.id, s2.id);
-    sm.createTransition(tid('t2'), s2.id, term.id);
+    const builder = new StateMachineBuilder(sm);
+    const init = builder.createInitial(sid('init'));
+    const s1   = builder.createState(sid('s1'));
+    const s2   = builder.createState(sid('s2'));
+    const term = builder.createTerminal(sid('term'));
+    builder.createTransition(tid('t0'), init.id, s1.id);
+    builder.createTransition(tid('t1'), s1.id, s2.id);
+    builder.createTransition(tid('t2'), s2.id, term.id);
     sm.start();
 
     const events: string[] = [];
@@ -192,13 +197,14 @@ describe('StateMachine.onStopped()', () => {
 
   it('emits onSMStopped with Error when narrowed transition does not match', () => {
     const sm = new BasicStateMachine(smid('sm'));
-    const init = sm.createInitial(sid('init'));
-    const s1   = sm.createState(sid('s1'));
-    const s2   = sm.createState(sid('s2'));
-    const term = sm.createTerminal(sid('term'));
-    sm.createTransition(tid('t0'), init.id, s1.id);
-    sm.createTransition(tid('t1'), s1.id, s2.id, StateStatus.Ok);
-    sm.createTransition(tid('t2'), s2.id, term.id);
+    const builder = new StateMachineBuilder(sm);
+    const init = builder.createInitial(sid('init'));
+    const s1   = builder.createState(sid('s1'));
+    const s2   = builder.createState(sid('s2'));
+    const term = builder.createTerminal(sid('term'));
+    builder.createTransition(tid('t0'), init.id, s1.id);
+    builder.createTransition(tid('t1'), s1.id, s2.id, StateStatus.Ok);
+    builder.createTransition(tid('t2'), s2.id, term.id);
 
     sm.start();
     const smStopped: StateMachineStoppedEvent[] = [];
@@ -209,22 +215,23 @@ describe('StateMachine.onStopped()', () => {
 
   it('Fork: emits array onStateStart and activates all branches', () => {
     const sm   = new BasicStateMachine(smid('sm'));
-    const init = sm.createInitial(sid('init'));
-    const s1   = sm.createState(sid('s1'));
-    const fork = sm.createFork(sid('fork'));
-    const a    = sm.createState(sid('a'));
-    const b    = sm.createState(sid('b'));
-    const join = sm.createJoin(sid('join'));
-    const out  = sm.createState(sid('out'));
-    const term = sm.createTerminal(sid('term'));
-    sm.createTransition(tid('t0'), init.id, s1.id);
-    sm.createTransition(tid('t1'), s1.id, fork.id);
-    sm.createTransition(tid('f1'), fork.id, a.id);
-    sm.createTransition(tid('f2'), fork.id, b.id);
-    sm.createTransition(tid('j1'), a.id, join.id);
-    sm.createTransition(tid('j2'), b.id, join.id);
-    sm.createTransition(tid('t2'), join.id, out.id);
-    sm.createTransition(tid('t3'), out.id, term.id);
+    const builder = new StateMachineBuilder(sm);
+    const init = builder.createInitial(sid('init'));
+    const s1   = builder.createState(sid('s1'));
+    const fork = builder.createFork(sid('fork'));
+    const a    = builder.createState(sid('a'));
+    const b    = builder.createState(sid('b'));
+    const join = builder.createJoin(sid('join'));
+    const out  = builder.createState(sid('out'));
+    const term = builder.createTerminal(sid('term'));
+    builder.createTransition(tid('t0'), init.id, s1.id);
+    builder.createTransition(tid('t1'), s1.id, fork.id);
+    builder.createTransition(tid('f1'), fork.id, a.id);
+    builder.createTransition(tid('f2'), fork.id, b.id);
+    builder.createTransition(tid('j1'), a.id, join.id);
+    builder.createTransition(tid('j2'), b.id, join.id);
+    builder.createTransition(tid('t2'), join.id, out.id);
+    builder.createTransition(tid('t3'), out.id, term.id);
 
     sm.start();
     let forkEvents: StateStartEvent[] | null = null;
@@ -241,22 +248,23 @@ describe('StateMachine.onStopped()', () => {
 
   it('Join: waits for all branches then routes forward', () => {
     const sm   = new BasicStateMachine(smid('sm'));
-    const init = sm.createInitial(sid('init'));
-    const s1   = sm.createState(sid('s1'));
-    const fork = sm.createFork(sid('fork'));
-    const a    = sm.createState(sid('a'));
-    const b    = sm.createState(sid('b'));
-    const join = sm.createJoin(sid('join'));
-    const out  = sm.createState(sid('out'));
-    const term = sm.createTerminal(sid('term'));
-    sm.createTransition(tid('t0'), init.id, s1.id);
-    sm.createTransition(tid('t1'), s1.id, fork.id);
-    sm.createTransition(tid('f1'), fork.id, a.id);
-    sm.createTransition(tid('f2'), fork.id, b.id);
-    sm.createTransition(tid('j1'), a.id, join.id);
-    sm.createTransition(tid('j2'), b.id, join.id);
-    sm.createTransition(tid('t2'), join.id, out.id);
-    sm.createTransition(tid('t3'), out.id, term.id);
+    const builder = new StateMachineBuilder(sm);
+    const init = builder.createInitial(sid('init'));
+    const s1   = builder.createState(sid('s1'));
+    const fork = builder.createFork(sid('fork'));
+    const a    = builder.createState(sid('a'));
+    const b    = builder.createState(sid('b'));
+    const join = builder.createJoin(sid('join'));
+    const out  = builder.createState(sid('out'));
+    const term = builder.createTerminal(sid('term'));
+    builder.createTransition(tid('t0'), init.id, s1.id);
+    builder.createTransition(tid('t1'), s1.id, fork.id);
+    builder.createTransition(tid('f1'), fork.id, a.id);
+    builder.createTransition(tid('f2'), fork.id, b.id);
+    builder.createTransition(tid('j1'), a.id, join.id);
+    builder.createTransition(tid('j2'), b.id, join.id);
+    builder.createTransition(tid('t2'), join.id, out.id);
+    builder.createTransition(tid('t3'), out.id, term.id);
 
     sm.start();
     sm.onStopped(sid('s1'), StateStatus.Ok);

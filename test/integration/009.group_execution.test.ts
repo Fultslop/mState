@@ -1,5 +1,6 @@
 // src/__integration__/009.group_execution.test.ts
 import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/StateMachineBuilder';
 import { StateStatus } from "@src/IState";
 import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
@@ -9,15 +10,16 @@ const tid  = (s: string) => s as TransitionId;
 
 function build() {
   const sm        = new BasicStateMachine(smid('groupExample'));
-  const rootInit  = sm.createInitial(sid('rootInit'));
-  const group     = sm.createGroup(sid('group'));
-  const groupInit = sm.createInitial(sid('groupInit'));
-  const step1     = sm.createState(sid('step1'));
-  const step2     = sm.createState(sid('step2'));
-  const groupTerm = sm.createTerminal(sid('groupTerm'));
-  const ch        = sm.createChoice(sid('groupChoice'));
-  const logErr    = sm.createState(sid('logError'));
-  const rootTerm  = sm.createTerminal(sid('rootTerm'));
+  const builder   = new StateMachineBuilder(sm);
+  const rootInit  = builder.createInitial(sid('rootInit'));
+  const group     = builder.createGroup(sid('group'));
+  const groupInit = builder.createInitial(sid('groupInit'));
+  const step1     = builder.createState(sid('step1'));
+  const step2     = builder.createState(sid('step2'));
+  const groupTerm = builder.createTerminal(sid('groupTerm'));
+  const ch        = builder.createChoice(sid('groupChoice'));
+  const logErr    = builder.createState(sid('logError'));
+  const rootTerm  = builder.createTerminal(sid('rootTerm'));
 
   // Register group members
   group.addMember(groupInit);
@@ -26,16 +28,16 @@ function build() {
   group.addMember(groupTerm);
 
   // Top-level transitions
-  sm.createTransition(tid('t0'), rootInit.id, group.id);
-  sm.createTransition(tid('t1'), group.id, ch.id);
-  sm.createTransition(tid('t2'), ch.id, rootTerm.id);
-  sm.createTransition(tid('t3'), ch.id, logErr.id, StateStatus.Error);
-  sm.createTransition(tid('t4'), logErr.id, rootTerm.id);
+  builder.createTransition(tid('t0'), rootInit.id, group.id);
+  builder.createTransition(tid('t1'), group.id, ch.id);
+  builder.createTransition(tid('t2'), ch.id, rootTerm.id);
+  builder.createTransition(tid('t3'), ch.id, logErr.id, StateStatus.Error);
+  builder.createTransition(tid('t4'), logErr.id, rootTerm.id);
 
   // Group-internal transitions
-  sm.createTransition(tid('gi0'), groupInit.id, step1.id);
-  sm.createTransition(tid('gi1'), step1.id, step2.id, StateStatus.Ok);
-  sm.createTransition(tid('gi2'), step2.id, groupTerm.id, StateStatus.Ok);
+  builder.createTransition(tid('gi0'), groupInit.id, step1.id);
+  builder.createTransition(tid('gi1'), step1.id, step2.id, StateStatus.Ok);
+  builder.createTransition(tid('gi2'), step2.id, groupTerm.id, StateStatus.Ok);
 
   return sm;
 }

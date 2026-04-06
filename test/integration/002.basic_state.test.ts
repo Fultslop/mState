@@ -1,5 +1,6 @@
 // src/__integration__/002.basic_state.test.ts
 import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/StateMachineBuilder';
 import { StateStatus } from "@src/IState";
 import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
@@ -10,11 +11,12 @@ const tid  = (s: string) => s as TransitionId;
 describe('spec 002 — basic single state', () => {
   function buildSM() {
     const sm   = new BasicStateMachine(smid('basicExample'));
-    const init = sm.createInitial(sid('initial'));
-    const s1   = sm.createState(sid('initialize'));
-    const term = sm.createTerminal(sid('terminal'));
-    sm.createTransition(tid('t0'), init.id, s1.id);
-    sm.createTransition(tid('t1'), s1.id, term.id);
+    const builder = new StateMachineBuilder(sm);
+    const init = builder.createInitial(sid('initial'));
+    const s1   = builder.createState(sid('initialize'));
+    const term = builder.createTerminal(sid('terminal'));
+    builder.createTransition(tid('t0'), init.id, s1.id);
+    builder.createTransition(tid('t1'), s1.id, term.id);
     return sm;
   }
 

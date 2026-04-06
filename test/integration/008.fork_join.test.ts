@@ -1,5 +1,6 @@
 // src/__integration__/008.fork_join.test.ts
 import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/StateMachineBuilder';
 import { StateStatus } from "@src/IState";
 import type { StateMachineId, StateId, TransitionId, StateStartEvent } from '../../src/types';
 
@@ -9,23 +10,24 @@ const tid  = (s: string) => s as TransitionId;
 
 function build() {
   const sm   = new BasicStateMachine(smid('parallelExecution'));
-  const init = sm.createInitial(sid('initial'));
-  const s1   = sm.createState(sid('init'));
-  const fork = sm.createFork(sid('fork_state'));
-  const a    = sm.createState(sid('RunServiceA'));
-  const b    = sm.createState(sid('RunServiceB'));
-  const join = sm.createJoin(sid('join_state'));
-  const out  = sm.createState(sid('ProcessOutcome'));
-  const term = sm.createTerminal(sid('terminal'));
+  const builder = new StateMachineBuilder(sm);
+  const init = builder.createInitial(sid('initial'));
+  const s1   = builder.createState(sid('init'));
+  const fork = builder.createFork(sid('fork_state'));
+  const a    = builder.createState(sid('RunServiceA'));
+  const b    = builder.createState(sid('RunServiceB'));
+  const join = builder.createJoin(sid('join_state'));
+  const out  = builder.createState(sid('ProcessOutcome'));
+  const term = builder.createTerminal(sid('terminal'));
 
-  sm.createTransition(tid('t0'), init.id, s1.id);
-  sm.createTransition(tid('t1'), s1.id, fork.id);
-  sm.createTransition(tid('f1'), fork.id, a.id);
-  sm.createTransition(tid('f2'), fork.id, b.id);
-  sm.createTransition(tid('j1'), a.id, join.id);
-  sm.createTransition(tid('j2'), b.id, join.id);
-  sm.createTransition(tid('t2'), join.id, out.id);
-  sm.createTransition(tid('t3'), out.id, term.id);
+  builder.createTransition(tid('t0'), init.id, s1.id);
+  builder.createTransition(tid('t1'), s1.id, fork.id);
+  builder.createTransition(tid('f1'), fork.id, a.id);
+  builder.createTransition(tid('f2'), fork.id, b.id);
+  builder.createTransition(tid('j1'), a.id, join.id);
+  builder.createTransition(tid('j2'), b.id, join.id);
+  builder.createTransition(tid('t2'), join.id, out.id);
+  builder.createTransition(tid('t3'), out.id, term.id);
   return sm;
 }
 

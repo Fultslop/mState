@@ -27,23 +27,7 @@ export interface IStateMachine {
   validate(): void;
 
   onStopped(id: StateId, status: StateStatus, exitCode?: string, payload?: unknown): void;
-
-  createInitial(id: StateId, payload?: unknown): IState;
-  createState(id: StateId, config?: Record<string, unknown>): IState;
-  createTerminal(id: StateId): IState;
-  createChoice(id: StateId): IState;
-  createFork(id: StateId, clonePayload?: (p: unknown) => unknown): IState;
-  createJoin(id: StateId): IJoinState;
-  createGroup(id: StateId, config?: Record<string, unknown>): IGroupState;
-
-  createTransition(
-    id: TransitionId,
-    fromId: StateId,
-    toId: StateId,
-    status?: StateStatus,
-    exitCode?: string,
-  ): ITransition;
-
+  
   getState(id: StateId): IState | undefined;
   getStateCount(): number;
   getStateIds(): ReadonlyArray<StateId>;

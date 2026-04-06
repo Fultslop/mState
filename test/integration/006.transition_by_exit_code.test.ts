@@ -1,5 +1,6 @@
 // src/__integration__/006.transition_by_exit_code.test.ts
 import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/StateMachineBuilder';
 import { StateStatus } from "@src/IState";
 import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
@@ -9,21 +10,22 @@ const tid  = (s: string) => s as TransitionId;
 
 function build() {
   const sm   = new BasicStateMachine(smid('exitCode'));
-  const init = sm.createInitial(sid('initial'));
-  const lc   = sm.createState(sid('loadConfig'));
-  const ch   = sm.createChoice(sid('ch'));
-  const a    = sm.createState(sid('execute_a'));
-  const b    = sm.createState(sid('execute_b'));
-  const err  = sm.createState(sid('logError'));
-  const term = sm.createTerminal(sid('terminal'));
-  sm.createTransition(tid('t0'), init.id, lc.id);
-  sm.createTransition(tid('t1'), lc.id, ch.id);
-  sm.createTransition(tid('t2'), ch.id, a.id, StateStatus.Ok, 'planA');
-  sm.createTransition(tid('t3'), ch.id, b.id, StateStatus.Ok, 'planB');
-  sm.createTransition(tid('t4'), ch.id, err.id, StateStatus.AnyStatus);
-  sm.createTransition(tid('t5'), a.id, term.id);
-  sm.createTransition(tid('t6'), b.id, term.id);
-  sm.createTransition(tid('t7'), err.id, term.id);
+  const builder = new StateMachineBuilder(sm);
+  const init = builder.createInitial(sid('initial'));
+  const lc   = builder.createState(sid('loadConfig'));
+  const ch   = builder.createChoice(sid('ch'));
+  const a    = builder.createState(sid('execute_a'));
+  const b    = builder.createState(sid('execute_b'));
+  const err  = builder.createState(sid('logError'));
+  const term = builder.createTerminal(sid('terminal'));
+  builder.createTransition(tid('t0'), init.id, lc.id);
+  builder.createTransition(tid('t1'), lc.id, ch.id);
+  builder.createTransition(tid('t2'), ch.id, a.id, StateStatus.Ok, 'planA');
+  builder.createTransition(tid('t3'), ch.id, b.id, StateStatus.Ok, 'planB');
+  builder.createTransition(tid('t4'), ch.id, err.id, StateStatus.AnyStatus);
+  builder.createTransition(tid('t5'), a.id, term.id);
+  builder.createTransition(tid('t6'), b.id, term.id);
+  builder.createTransition(tid('t7'), err.id, term.id);
   return sm;
 }
 

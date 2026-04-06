@@ -46,68 +46,6 @@ export class BasicStateMachine implements IStateMachine {
     this._router = new TransitionRouter(this._states, this._transitions);
   }
 
-  // ── Builder ──────────────────────────────────────────────────────────────
-
-  createInitial(id: StateId, payload?: unknown): IState {
-    const s = new InitialState(id, payload);
-    this._states.add(s);
-    return s;
-  }
-
-  createState(id: StateId, config?: Record<string, unknown>): IState {
-    const s = new UserDefinedState(id, config);
-    this._states.add(s);
-    return s;
-  }
-
-  createTerminal(id: StateId): IState {
-    const s = new TerminalState(id);
-    this._states.add(s);
-    return s;
-  }
-
-  createChoice(id: StateId): IState {
-    const s = new ChoiceState(id);
-    this._states.add(s);
-    return s;
-  }
-
-  createFork(id: StateId, clonePayload?: (p: unknown) => unknown): IState {
-    const s = new ForkState(id, clonePayload);
-    this._states.add(s);
-    return s;
-  }
-
-  createJoin(id: StateId): IJoinState {
-    const s = new JoinState(id);
-    this._states.add(s);
-    return s;
-  }
-
-  createGroup(id: StateId, config?: Record<string, unknown>): IGroupState {
-    const s = new GroupState(id, config);
-    this._states.add(s);
-    return s;
-  }
-
-  createTransition(
-    id: TransitionId,
-    fromId: StateId,
-    toId: StateId,
-    status?: StateStatus,
-    exitCode?: string,
-  ): ITransition {
-    const t = new Transition(id, fromId, toId, status, exitCode);
-    this._transitions.add(t);
-    const from = this._states.get(fromId);
-    const to = this._states.get(toId);
-    if (!from) throw new SMRuntimeException(`fromId '${fromId}' not found`);
-    if (!to) throw new SMRuntimeException(`toId '${toId}' not found`);
-    from.outgoing.add(id);
-    to.incoming.add(id);
-    return t;
-  }
-
   // ── Registry access ───────────────────────────────────────────────────────
 
   addState(state: IState): void {
