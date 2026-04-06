@@ -30,14 +30,14 @@ export class ConfigParser {
     if (typeof entry !== 'object' || entry === null) return empty;
 
     const block = entry as Record<string, unknown>;
-    const config = isRecord(block['config']) ? block['config'] : undefined;
-    const initial = isRecord(block['initial']) ? block['initial'] : undefined;
+    const config = isRecord(block.config) ? block.config : undefined;
+    const initial = isRecord(block.initial) ? block.initial : undefined;
     const states: Record<string, StateConfig> = {};
 
-    if (isRecord(block['states'])) {
-      for (const [k, v] of Object.entries(block['states'])) {
+    if (isRecord(block.states)) {
+      for (const [k, v] of Object.entries(block.states)) {
         if (isRecord(v)) {
-          states[k] = { config: isRecord(v['config']) ? v['config'] : undefined };
+          states[k] = { config: isRecord(v.config) ? v.config : undefined };
         }
       }
     }

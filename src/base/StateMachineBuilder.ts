@@ -18,6 +18,7 @@ import type { GroupState } from '../model/GroupState';
 export class BuildSession {
     
   private readonly _stateMachine: StateMachine;
+
   private readonly _builder: StateMachineBuilder;
 
   constructor(stateMachine?: StateMachine) {

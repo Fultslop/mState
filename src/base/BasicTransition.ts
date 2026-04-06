@@ -4,9 +4,13 @@ import type { Transition } from '../model/Transition';
 
 export class BasicTransition implements Transition {
   readonly id: TransitionId;
+
   readonly fromStateId: StateId;
+
   readonly toStateId: StateId;
+
   readonly status: StateStatus | undefined;
+
   readonly exitCode: string | undefined;
   
   parentId: StateId | undefined

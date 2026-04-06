@@ -62,9 +62,7 @@ export function createStateModel(
   options?: { fromFile: true },
 ): StateMachine[] | Promise<StateMachine[]> {
   if (options?.fromFile) {
-    return fs.promises.readFile(input, 'utf8').then((content) => {
-      return parseDiagrams(content);
-    });
+    return fs.promises.readFile(input, 'utf8').then((content) => parseDiagrams(content));
   }
 
   // Inline string — could be a raw diagram or a markdown document with fenced blocks

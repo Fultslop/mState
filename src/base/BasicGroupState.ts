@@ -7,6 +7,7 @@ import type { Transition } from '@src/model/Transition';
 
 export class BasicGroupState extends BaseState implements GroupState {
   readonly stateIds: Set<StateId> = new Set();
+
   readonly transitionIds: Set<TransitionId> = new Set();
 
   constructor(id: StateId, config?: Record<string, unknown>, parentId?: StateId) {

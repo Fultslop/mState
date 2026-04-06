@@ -25,15 +25,23 @@ import type { JoinState } from '../model/JoinState';
 
 export class BasicStateMachine implements StateMachine {
   readonly id: StateMachineId;
+
   readonly onStateMachineStarted = new TypedEvent<StateMachineStartedEvent>();
+
   readonly onStateStart = new TypedEvent<StateStartEvent | StateStartEvent[]>();
+
   readonly onStateStopped = new TypedEvent<StateStoppedEvent>();
+
   readonly onStateMachineStopped = new TypedEvent<StateMachineStoppedEvent>();
 
   private readonly _states = new StateRegistry();
+
   private readonly _transitions = new TransitionRegistry();
+
   private readonly _router: TransitionRouter;
+
   private readonly _validator = new Validator();
+
   private readonly _active = new Set<StateId>();
 
   constructor(id: StateMachineId) {
@@ -311,9 +319,7 @@ export class BasicStateMachine implements StateMachine {
   }
 
   private _startGroup(group: GroupState, payload: unknown): void {
-    const initId = Array.from(group.stateIds).find((id) => {
-      return this._states.get(id)?.type === StateType.Initial;
-    });
+    const initId = Array.from(group.stateIds).find((id) => this._states.get(id)?.type === StateType.Initial);
     if (!initId) throw new SMRuntimeException(`Group '${group.id}' has no Initial member state`);
 
     const groupInit = this._states.get(initId) as InitialState;
