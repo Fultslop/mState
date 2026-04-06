@@ -41,14 +41,24 @@ function parseTransition(match: RegExpExecArray): Token {
 }
 
 function parseLine(line: string): Token | null {
-  if (DIRECTION_RE.test(line)) return { kind: 'direction' };
+  if (DIRECTION_RE.test(line)) {
+return { kind: 'direction' };
+}
   const stateDecl = STATE_DECL_RE.exec(line);
-  if (stateDecl) return parseStateDecl(stateDecl);
+  if (stateDecl) {
+return parseStateDecl(stateDecl);
+}
   const groupOpen = GROUP_OPEN_RE.exec(line);
-  if (groupOpen) return { kind: 'groupOpen', id: groupOpen[1]! };
-  if (GROUP_CLOSE_RE.test(line)) return { kind: 'groupClose' };
+  if (groupOpen) {
+return { kind: 'groupOpen', id: groupOpen[1]! };
+}
+  if (GROUP_CLOSE_RE.test(line)) {
+return { kind: 'groupClose' };
+}
   const transition = TRANSITION_RE.exec(line);
-  if (transition) return parseTransition(transition);
+  if (transition) {
+return parseTransition(transition);
+}
   return null;
 }
 
@@ -60,7 +70,9 @@ export function tokenize(diagramText: string): Token[] {
     const line = raw.trim().replace(/%%.*$/, '').trim();
     if (line) {
       const token = parseLine(line);
-      if (token) tokens.push(token);
+      if (token) {
+tokens.push(token);
+}
     }
   }
 

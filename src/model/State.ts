@@ -18,6 +18,7 @@ export enum StateType {
   Join = 'join',
   Group = 'group',
   UserDefined = 'userDefined',
+  Parallel = 'parallel',
 }
 
 export interface State {

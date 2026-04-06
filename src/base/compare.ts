@@ -2,14 +2,22 @@ import type { State } from '../model/State';
 import type { Transition } from '../model/Transition';
 import type { StateMachine } from '../model/StateMachine';
 
-function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  if (a.size !== b.size) return false;
-  for (const v of a) if (!b.has(v)) return false;
+function setsEqual<T>(setA: Set<T>, setB: Set<T>): boolean {
+  if (setA.size !== setB.size) {
+    return false;
+  }
+  for (const v of setA) {
+    if (!setB.has(v)) {
+      return false;
+    }
+  }
   return true;
 }
 
 function sortKeys(obj: unknown): unknown {
-  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return obj;
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+return obj;
+}
   return Object.fromEntries(
     Object.entries(obj as Record<string, unknown>)
       .sort(([ka], [kb]) => ka.localeCompare(kb))
@@ -18,9 +26,15 @@ function sortKeys(obj: unknown): unknown {
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a === undefined || b === undefined) return false;
-  if (a === null || b === null) return false;
+  if (a === b) {
+return true;
+}
+  if (a === undefined || b === undefined) {
+return false;
+}
+  if (a === null || b === null) {
+return false;
+}
   return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
 }
 

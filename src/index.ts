@@ -19,3 +19,6 @@ export { SMRuntimeException } from './base/SMRuntimeException';
 export { BasicStateMachine as StateMachine } from './base/BasicStateMachine';
 export { createStateModel } from './parser/createStateModel';
 export { compareStates, compareTransitions, compareStateMachines } from './base/compare';
+export { Region } from './base/Region';
+export { ParallelState } from './base/ParallelState';
+export { StateMachineBuilder } from './base/StateMachineBuilder';

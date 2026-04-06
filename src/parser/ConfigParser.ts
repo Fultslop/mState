@@ -35,7 +35,9 @@ function parseBlock(block: Record<string, unknown>): DiagramConfig {
 }
 
 export function parseConfig(smConfigYaml: string, diagramTitle: string): DiagramConfig {
-  if (!smConfigYaml.trim()) return EMPTY;
+  if (!smConfigYaml.trim()) {
+return EMPTY;
+}
 
   let parsed: unknown;
   try {
@@ -44,9 +46,13 @@ export function parseConfig(smConfigYaml: string, diagramTitle: string): Diagram
     throw new SMValidationException(`smConfig YAML parse error: ${(error as Error).message}`);
   }
 
-  if (!isRecord(parsed)) return EMPTY;
+  if (!isRecord(parsed)) {
+return EMPTY;
+}
   const entry = parsed[diagramTitle];
-  if (!isRecord(entry)) return EMPTY;
+  if (!isRecord(entry)) {
+return EMPTY;
+}
 
   return parseBlock(entry);
 }

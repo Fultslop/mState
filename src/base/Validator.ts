@@ -7,6 +7,8 @@ import type { TransitionRegistry } from './TransitionRegistry';
 import { SMValidationException } from './SMValidationException';
 import { requiresTruthy } from '../common/requires';
 import type { GroupState } from '../model/GroupState';
+import type { ParallelState } from './ParallelState';
+import type { Region } from './Region';
 
 // ── BFS helpers ───────────────────────────────────────────────────────────────
 
@@ -25,7 +27,9 @@ function bfsReachable(
       requiresTruthy(s, `state '${id}' not found in bfsReachable`);
       for (const tId of s.outgoing) {
         const t = transitions.get(tId);
-        if (t && !visited.has(t.toStateId)) queue.push(t.toStateId);
+        if (t && !visited.has(t.toStateId)) {
+queue.push(t.toStateId);
+}
       }
     }
   }
@@ -48,7 +52,9 @@ function bfsReachableWithin(
       requiresTruthy(s, `state '${id}' not found in bfsReachableWithin`);
       for (const tId of s.outgoing) {
         const t = transitions.get(tId);
-        if (t && !visited.has(t.toStateId)) queue.push(t.toStateId);
+        if (t && !visited.has(t.toStateId)) {
+queue.push(t.toStateId);
+}
       }
     }
   }
@@ -68,11 +74,17 @@ function bfsReachesJoinBeforeTerminal(
       visited.add(id);
       const s = states.get(id);
       requiresTruthy(s, `state '${id}' not found in bfsReachesJoinBeforeTerminal`);
-      if (s.type === StateType.Join) return true;
-      if (s.type === StateType.Terminal) return false;
+      if (s.type === StateType.Join) {
+return true;
+}
+      if (s.type === StateType.Terminal) {
+return false;
+}
       for (const tId of s.outgoing) {
         const t = transitions.get(tId);
-        if (t) queue.push(t.toStateId);
+        if (t) {
+queue.push(t.toStateId);
+}
       }
     }
   }
@@ -85,7 +97,17 @@ function buildTopLevel(allStates: readonly State[]): State[] {
   const groupMemberIds = new Set<StateId>();
   for (const s of allStates) {
     if (s.type === StateType.Group) {
-      for (const id of (s as GroupState).stateIds) groupMemberIds.add(id);
+      for (const id of (s as GroupState).stateIds) {
+groupMemberIds.add(id);
+}
+    }
+    if (s.type === StateType.Parallel) {
+      const ps = s as ParallelState;
+      for (const region of ps.getRegions()) {
+        for (const id of region.stateIds) {
+groupMemberIds.add(id);
+}
+      }
     }
   }
   return allStates.filter((state) => !groupMemberIds.has(state.id));
@@ -150,7 +172,9 @@ function validateChoiceTransitions(stateId: StateId, outgoing: readonly Transiti
   let defaultCount = 0;
   for (const t of outgoing) {
     if (t.status === undefined || t.status === StateStatus.AnyStatus) {
-      if (t.exitCode === undefined) defaultCount++;
+      if (t.exitCode === undefined) {
+defaultCount++;
+}
     }
     const key = `${t.status ?? ''}/${t.exitCode ?? ''}`;
     if (seen.has(key)) {
@@ -251,6 +275,108 @@ function validateGroups(
   }
 }
 
+function validateNoCrossRegionTransitions(
+  region: Region,
+  ps: ParallelState,
+  allTransitions: readonly Transition[],
+): void {
+  for (const tId of region.transitionIds) {
+    const t = allTransitions.find((tr) => tr.id === tId);
+    if (t) {
+      const fromInRegion = region.hasState(t.fromStateId);
+      const toInRegion = region.hasState(t.toStateId);
+      if (fromInRegion && !toInRegion && t.toStateId !== region.terminal.id) {
+        for (const other of ps.getRegions()) {
+          if (other !== region && other.hasState(t.toStateId)) {
+            throw new SMValidationException(
+              `P3: transition '${t.id}' crosses region boundary between '${region.id}' and '${other.id}'`,
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+function validateNoOuterTerminalBypass(
+  region: Region,
+  ps: ParallelState,
+  allTransitions: readonly Transition[],
+  allStates: readonly State[],
+  states: StateRegistry,
+): void {
+  const outerTerminalIds = new Set(
+    allStates
+      .filter((st) => st.type === StateType.Terminal && !ps.findRegionForState(st.id))
+      .map((st) => st.id),
+  );
+  for (const stateId of region.stateIds) {
+    const st = states.get(stateId);
+    if (st) {
+      for (const tId of st.outgoing) {
+        const t = allTransitions.find((tr) => tr.id === tId);
+        if (t && outerTerminalIds.has(t.toStateId)) {
+          throw new SMValidationException(
+            `P5: state '${stateId}' in region '${region.id}' transitions directly to outer terminal '${t.toStateId}' — must go through region terminal`,
+          );
+        }
+      }
+    }
+  }
+}
+
+function validateParallelRegion(
+  region: Region,
+  ps: ParallelState,
+  allTransitions: readonly Transition[],
+  allStates: readonly State[],
+  states: StateRegistry,
+): void {
+  // P1: region must have exactly one Initial
+  const initials = Array.from(region.stateIds).filter(
+    (id) => states.get(id)?.type === StateType.Initial,
+  );
+  if (initials.length !== 1) {
+    throw new SMValidationException(
+      `P1: Region '${region.id}' in parallel '${ps.id}' must have exactly 1 Initial state, found ${initials.length}`,
+    );
+  }
+
+  // P2: region terminal must exist in the SM registry
+  if (!states.get(region.terminal.id)) {
+    throw new SMValidationException(
+      `P2: Region '${region.id}' in parallel '${ps.id}' is missing its terminal state`,
+    );
+  }
+
+  validateNoCrossRegionTransitions(region, ps, allTransitions);
+  validateNoOuterTerminalBypass(region, ps, allTransitions, allStates, states);
+}
+
+function validateParallels(
+  allStates: readonly State[],
+  allTransitions: readonly Transition[],
+  states: StateRegistry,
+): void {
+  for (const s of allStates.filter((state) => state.type === StateType.Parallel)) {
+    const ps = s as ParallelState;
+
+    for (const region of ps.getRegions()) {
+      validateParallelRegion(region, ps, allTransitions, allStates, states);
+    }
+
+    // P4: parallel may not be directly followed by Choice
+    for (const tId of ps.outgoing) {
+      const t = allTransitions.find((tr) => tr.id === tId);
+      if (t && states.get(t.toStateId)?.type === StateType.Choice) {
+        throw new SMValidationException(
+          `P4: Parallel '${ps.id}' is directly followed by Choice '${t.toStateId}' without an intervening state`,
+        );
+      }
+    }
+  }
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export function validateStateMachine(states: StateRegistry, transitions: TransitionRegistry): void {
@@ -265,4 +391,5 @@ export function validateStateMachine(states: StateRegistry, transitions: Transit
   validateForks(allStates, states, transitions);
   validateJoins(allStates, states, transitions);
   validateGroups(allStates, allTransitions, states, transitions);
+  validateParallels(allStates, allTransitions, states);
 }

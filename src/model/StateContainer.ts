@@ -9,6 +9,6 @@ export interface StateContainer {
   addState(state: State): void;
   deleteState(id: StateId): void;
   hasTransition(id: TransitionId): boolean;
-  addTransition(t: Transition): void;
+  addTransition(transition: Transition): void;
   deleteTransition(id: TransitionId): void;
 }

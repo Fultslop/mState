@@ -33,7 +33,9 @@ export class TransitionRouter {
 
   private static _resolveFork(state: State): RouteResult {
     const ids = Array.from(state.outgoing);
-    if (ids.length === 0) return { kind: 'none' };
+    if (ids.length === 0) {
+return { kind: 'none' };
+}
     return { kind: 'transition', transitionIds: ids };
   }
 
@@ -42,7 +44,9 @@ export class TransitionRouter {
       .map((id) => this._transitions.get(id))
       .filter((t): t is Transition => t !== undefined);
 
-    if (outgoing.length === 0) return { kind: 'none' };
+    if (outgoing.length === 0) {
+return { kind: 'none' };
+}
 
     const hasQualified = outgoing.some((t) => t.status !== undefined);
     const matching = outgoing.filter((t) => TransitionRouter._matches(t, status, exitCode));
@@ -52,7 +56,9 @@ export class TransitionRouter {
     }
 
     const first = matching[0];
-    if (first === undefined) return { kind: 'none' };
+    if (first === undefined) {
+return { kind: 'none' };
+}
 
     const target = this._states.get(first.toStateId);
     if (!target) {

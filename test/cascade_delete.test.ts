@@ -192,3 +192,53 @@ describe('deleteState on GroupState — cascade deletes all children', () => {
     expect(sm.getTransitionCount()).toBe(0);
   });
 });
+
+// ── deleteState on ParallelState ──────────────────────────────────────────────
+
+import { ParallelState } from '@src/base/ParallelState';
+import { StateType } from '@src/model/State';
+
+describe('cascade delete — parallel', () => {
+  function buildParallelForDelete() {
+    const sm      = new BasicStateMachine(smid('test'));
+    const builder = new StateMachineBuilder(sm);
+    const init    = builder.createInitial(sid('init'));
+    const ps      = builder.createParallel(sid('p1'));
+    const term    = builder.createTerminal(sid('term'));
+    builder.createTransition(tid('t0'), init.id, ps.id);
+    builder.createTransition(tid('t1'), ps.id, term.id);
+
+    const r1   = ps.createRegion('r1');
+    const ri1  = builder.createInitial(sid('ri1'));
+    const rs1  = builder.createState(sid('rs1'));
+    const rt1  = builder.createTransition(tid('rt1'), ri1.id, rs1.id);
+    const rt2  = builder.createTransition(tid('rt2'), rs1.id, r1.terminal.id);
+    r1.addState(ri1); r1.addState(rs1);
+    r1.addTransition(rt1); r1.addTransition(rt2);
+    return { sm, ps, r1 };
+  }
+
+  it('deleteState on parallel removes all region members and transitions', () => {
+    const { sm, ps } = buildParallelForDelete();
+    const before = sm.getStateCount();
+    sm.deleteState(sid('p1'));
+    expect(sm.getState(sid('p1'))).toBeUndefined();
+    expect(sm.getState(sid('ri1'))).toBeUndefined();
+    expect(sm.getState(sid('rs1'))).toBeUndefined();
+    expect(sm.getStateCount()).toBeLessThan(before);
+  });
+
+  it('deleteState on region member removes it from the region', () => {
+    const { sm, r1 } = buildParallelForDelete();
+    sm.deleteState(sid('rs1'));
+    expect(sm.getState(sid('rs1'))).toBeUndefined();
+    expect(r1.hasState(sid('rs1'))).toBe(false);
+  });
+
+  it('deleteTransition on region transition removes it from the region', () => {
+    const { sm, r1 } = buildParallelForDelete();
+    sm.deleteTransition(tid('rt1'));
+    expect(sm.getTransition(tid('rt1'))).toBeUndefined();
+    expect(r1.hasTransition(tid('rt1'))).toBe(false);
+  });
+});

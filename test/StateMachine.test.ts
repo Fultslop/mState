@@ -82,6 +82,22 @@ describe('StateMachine construction', () => {
     expect(g.type).toBe(StateType.Group);
   });
 
+  it('createParallel adds a Parallel state', () => {
+    const sm = new BasicStateMachine(smid('test'));
+    const builder = new StateMachineBuilder(sm);
+    const ps = builder.createParallel(sid('p1'));
+    expect(ps.type).toBe(StateType.Parallel);
+    expect(sm.getState(sid('p1'))).toBe(ps);
+  });
+
+  it('createParallel stores payloadClone', () => {
+    const sm = new BasicStateMachine(smid('test'));
+    const builder = new StateMachineBuilder(sm);
+    const clone = (p: unknown) => p;
+    const ps = builder.createParallel(sid('p1'), clone);
+    expect((ps as any).payloadClone).toBe(clone);
+  });
+
   it('createTransition wires incoming/outgoing sets', () => {
     const sm = new BasicStateMachine(smid('test'));
     const builder = new StateMachineBuilder(sm);

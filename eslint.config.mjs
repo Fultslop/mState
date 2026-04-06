@@ -4,6 +4,7 @@ const require = createRequire(import.meta.url);
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
 import prettierConfig from "eslint-config-prettier";
+import unicorn from "eslint-plugin-unicorn";
 
 // Importing the individual rule sets from airbnb-base
 // This bypasses the ESM loader issues in Node 25
@@ -44,12 +45,13 @@ export default [
       // Use optional chaining in case the specific version naming differs
       ...(tseslint.configs["recommended-type-checked"]?.rules || {}),
       
+     
       // Your Specific Overrides
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/explicit-function-return-type": "warn",
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/consistent-type-imports": "error",
-      
+      "@typescript-eslint/consistent-type-imports": "error",      
+
       // Essential Airbnb-to-TS compatibility overrides
       "import/extensions": "off",
       "import/no-unresolved": "off",
@@ -58,8 +60,7 @@ export default [
       "@typescript-eslint/no-use-before-define": "error",
       "no-shadow": "off",
       "@typescript-eslint/no-shadow": "error",
-      "complexity": ["error", 10],
-
+      
       // Tuned Airbnb rules
       "no-param-reassign": ["error", { "props": false }], // ban param rebinding, allow property mutation
 
@@ -69,13 +70,47 @@ export default [
       "no-plusplus": "off",           // i++ in loops is universally understood
       "no-redeclare": "off",          // TS function overloads look like redeclarations; TS compiler handles this
     },
-  },
-  // Parser files: stricter naming — no single-letter or two-letter identifiers
+  }, 
+  prettierConfig, 
   {
-    files: ["src/parser/**/*.ts"],
-    rules: {
-      "id-length": ["error", { "min": 3, "exceptions": ["id", "to", "ok", "fs"] }],
+    files: ["src/**/*.ts"],
+    plugins: {
+      unicorn,
     },
+    rules: {
+      "unicorn/no-for-loop": "error",
+      "unicorn/prefer-array-some": "error",
+      "unicorn/prefer-array-find": "error",
+      "unicorn/prefer-set-has": "error"
+    }
   },
-  prettierConfig, // Always last
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      "complexity": ["error", 10],
+        "max-len": ["error", { "code": 100 }],
+        "@typescript-eslint/no-confusing-void-expression": ["error", { 
+          "ignoreArrowShorthand": true 
+        }],
+        "curly": ["error", "all"],
+        "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+        // Parser files: stricter naming — no single-letter or two-letter identifiers
+        "id-length": ["error", { "min": 3, "exceptions": ["id", "to", "ok", "fs"] }],
+        "no-useless-return": "error",
+        "no-restricted-syntax": [
+          "error",
+          // 1. Catch the "Set crud" (Manual guard loops)
+          {
+            "selector": "ForOfStatement > BlockStatement > IfStatement[test.operator='!'] > ReturnStatement[argument.value=false]",
+            "message": "This manual guard loop can be replaced with .every() or .isSubsetOf()."
+          },
+          // 2. Catch the "Naked Returns"
+          {
+            "selector": "ReturnStatement[argument=null]",
+            "message": "Early returns (naked returns) are disallowed. Ensure the function logic flows to the end."
+          }
+        ]
+      }
+  }
+
 ];

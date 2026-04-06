@@ -8,8 +8,8 @@ export class TypedEvent<T> {
   }
 
   emit(event: T): void {
-    for (const h of this._handlers) {
-      h(event);
+    for (const handler of this._handlers) {
+      handler(event);
     }
   }
 }

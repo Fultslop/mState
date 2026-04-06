@@ -9,6 +9,7 @@ import { BasicJoinState } from './BasicJoinState';
 import { TerminalState } from './TerminalState';
 import { UserDefinedState } from './UserDefinedState';
 import { BasicTransition } from './BasicTransition';
+import { ParallelState } from './ParallelState';
 import type { StateId, TransitionId } from '../model/types';
 import type { Transition } from '../model/Transition';
 import type { JoinState } from '../model/JoinState';
@@ -64,6 +65,12 @@ export class StateMachineBuilder {
     return s;
   }
 
+  createParallel(id: StateId, payloadClone?: (p: unknown) => unknown, parent?: StateId): ParallelState {
+    const s = new ParallelState(id, (state) => this._stateMachine.addState(state), payloadClone, parent);
+    this._stateMachine.addState(s);
+    return s;
+  }
+
   createTransition(
     id: TransitionId,
     fromId: StateId,
@@ -76,10 +83,14 @@ export class StateMachineBuilder {
     this._stateMachine.addTransition(t);
     const from = this._stateMachine.getState(fromId);
     
-    if (!from) throw new SMRuntimeException(`fromId '${fromId}' not found`);
+    if (!from) {
+throw new SMRuntimeException(`fromId '${fromId}' not found`);
+}
     
     const to = this._stateMachine.getState(toId);
-    if (!to) throw new SMRuntimeException(`toId '${toId}' not found`);
+    if (!to) {
+throw new SMRuntimeException(`toId '${toId}' not found`);
+}
 
     from.outgoing.add(id);
     to.incoming.add(id);

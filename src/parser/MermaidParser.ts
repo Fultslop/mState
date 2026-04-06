@@ -44,7 +44,9 @@ function handleGroupOpen(
   groupStack: string[],
   state: { depth: number; currentGroup: string | null },
 ): void {
-  if (state.depth === 0) state.currentGroup = token.id;
+  if (state.depth === 0) {
+state.currentGroup = token.id;
+}
   if (state.currentGroup) {
     groupMembers.set(state.currentGroup, groupMembers.get(state.currentGroup) ?? new Set());
   }
@@ -58,7 +60,9 @@ function handleGroupClose(
 ): void {
   groupStack.pop();
   state.depth -= 1;
-  if (state.depth === 0) state.currentGroup = null;
+  if (state.depth === 0) {
+state.currentGroup = null;
+}
 }
 
 function handleTransitionDecl(
@@ -66,10 +70,16 @@ function handleTransitionDecl(
   groupMembers: Map<string, Set<string>>,
   currentGroup: string | null,
 ): void {
-  if (currentGroup === null) return;
+  if (currentGroup === null) {
+    return;
+  }
   const members = groupMembers.get(currentGroup)!;
-  if (token.from !== '[*]') members.add(token.from);
-  if (token.to !== '[*]') members.add(token.to);
+  if (token.from !== '[*]') {
+    members.add(token.from);
+  }
+  if (token.to !== '[*]') {
+    members.add(token.to);
+  }
 }
 
 function collectDeclarations(tokens: Token[]): CollectResult {
@@ -96,7 +106,9 @@ function collectDeclarations(tokens: Token[]): CollectResult {
 // ── Build helpers ────────────────────────────────────────────────────────────
 
 function ensureState(ctx: BuildContext, id: string): void {
-  if (ctx.ensured.has(id)) return;
+  if (ctx.ensured.has(id)) {
+return;
+}
   ctx.ensured.add(id);
   const stateType = ctx.declared.get(id);
   switch (stateType) {
@@ -111,7 +123,9 @@ function ensureState(ctx: BuildContext, id: string): void {
       ensureState(ctx, memberId);
       const groupState = ctx.stateMachine.getState(id as StateId);
       const memberState = ctx.stateMachine.getState(memberId as StateId);
-      if (groupState && memberState) (groupState as GroupState).addState(memberState);
+      if (groupState && memberState) {
+(groupState as GroupState).addState(memberState);
+}
     }
     return;
   }
@@ -120,7 +134,9 @@ function ensureState(ctx: BuildContext, id: string): void {
 
 function ensureInitial(ctx: BuildContext, context: string | null): string {
   const key = context ?? '__root__';
-  if (ctx.initialIds.has(key)) return ctx.initialIds.get(key)!;
+  if (ctx.initialIds.has(key)) {
+return ctx.initialIds.get(key)!;
+}
   const id = context ? `${context}__initial` : 'initial';
   ctx.builder.createInitial(id as StateId);
   if (context) {
@@ -134,7 +150,9 @@ function ensureInitial(ctx: BuildContext, context: string | null): string {
 
 function ensureTerminal(ctx: BuildContext, context: string | null): string {
   const key = context ?? '__root__';
-  if (ctx.terminalIds.has(key)) return ctx.terminalIds.get(key)!;
+  if (ctx.terminalIds.has(key)) {
+return ctx.terminalIds.get(key)!;
+}
   const id = context ? `${context}__terminal` : 'terminal';
   ctx.builder.createTerminal(id as StateId);
   if (context) {
@@ -147,7 +165,9 @@ function ensureTerminal(ctx: BuildContext, context: string | null): string {
 }
 
 function parseTransitionLabel(label: string | undefined): LabelResult {
-  if (!label) return { status: undefined, exitCode: undefined };
+  if (!label) {
+return { status: undefined, exitCode: undefined };
+}
   const parts = label.split('/');
   if (parts.length > 2) {
     throw new SMValidationException(
@@ -172,8 +192,12 @@ function processTransition(
 ): void {
   const fromId = token.from === '[*]' ? ensureInitial(ctx, currentGroup) : token.from;
   const toId = token.to === '[*]' ? ensureTerminal(ctx, currentGroup) : token.to;
-  if (token.from !== '[*]') ensureState(ctx, token.from);
-  if (token.to !== '[*]') ensureState(ctx, token.to);
+  if (token.from !== '[*]') {
+ensureState(ctx, token.from);
+}
+  if (token.to !== '[*]') {
+ensureState(ctx, token.to);
+}
   const { status, exitCode } = parseTransitionLabel(token.label);
   const guardKey = [status ?? '', exitCode ?? ''].filter(Boolean).join('/');
   const transitionId = (guardKey
