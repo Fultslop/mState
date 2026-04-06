@@ -1,5 +1,4 @@
-import { BasicStateMachine } from './BasicStateMachine';
-import { SMRuntimeException } from './exceptions';
+import { SMRuntimeException } from "./SMRuntimeException";
 import type { State, StateStatus } from '../model/State';
 import type { StateMachine } from '../model/StateMachine';
 import { ChoiceState } from './ChoiceState';
@@ -10,28 +9,11 @@ import { BasicJoinState } from './BasicJoinState';
 import { TerminalState } from './TerminalState';
 import { UserDefinedState } from './UserDefinedState';
 import { BasicTransition } from './BasicTransition';
-import type { StateId, StateMachineId, TransitionId } from '../model/types';
+import type { StateId, TransitionId } from '../model/types';
 import type { Transition } from '../model/Transition';
 import type { JoinState } from '../model/JoinState';
 import type { GroupState } from '../model/GroupState';
 
-export class BuildSession {
-    
-  private readonly _stateMachine: StateMachine;
-
-  private readonly _builder: StateMachineBuilder;
-
-  constructor(stateMachine?: StateMachine) {
-    this._stateMachine = stateMachine || new BasicStateMachine(`stateMachine#${crypto.randomUUID()}` as StateMachineId );
-    this._builder = new StateMachineBuilder(this._stateMachine)
-    return this;
-  }
-
-  createInitial(id?: StateId, payload?: unknown): BuildSession {
-    this._builder.createInitial(id || `initial#${crypto.randomUUID()}` as StateId, payload);
-    return this;
-  }
-}
 
 export class StateMachineBuilder {
   constructor(private readonly _stateMachine: StateMachine) {}

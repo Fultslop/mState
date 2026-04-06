@@ -1,5 +1,5 @@
 import * as yaml from 'js-yaml';
-import { SMValidationException } from '../base/exceptions';
+import { SMValidationException } from "@src/base/SMValidationException";
 
 export interface StateConfig {
   config?: Record<string, unknown> | undefined;

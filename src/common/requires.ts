@@ -1,4 +1,4 @@
-import { SMRuntimeException } from "@src/base/exceptions";
+import { SMRuntimeException } from "@src/base/SMRuntimeException";
 
 export function requiresTruthy<T>(value: T, message?: string) : asserts value is NonNullable<T> {
     if (!value) {

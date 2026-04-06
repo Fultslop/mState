@@ -3,7 +3,8 @@
 import { BasicStateMachine } from '../../src/base/BasicStateMachine';
 import { StateStatus, StateType } from "@src/model/State";
 import type { StateMachineId, StateId, TransitionId } from '../../src/model/types';
-import { SMValidationException, SMRuntimeException } from '../../src/base/exceptions';
+import { SMValidationException } from "@src/base/SMValidationException";
+import { SMRuntimeException } from "@src/base/SMRuntimeException";
 import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
 
 const smid = (s: string) => s as StateMachineId;

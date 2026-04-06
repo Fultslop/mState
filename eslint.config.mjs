@@ -51,13 +51,23 @@ export default [
       "@typescript-eslint/consistent-type-imports": "error",
       
       // Essential Airbnb-to-TS compatibility overrides
-      "import/extensions": "off", 
+      "import/extensions": "off",
       "import/no-unresolved": "off",
       "import/prefer-default-export": "off",
       "no-use-before-define": "off",
       "@typescript-eslint/no-use-before-define": "error",
       "no-shadow": "off",
       "@typescript-eslint/no-shadow": "error",
+      "complexity": ["error", 10],
+
+      // Tuned Airbnb rules
+      "no-param-reassign": ["error", { "props": false }], // ban param rebinding, allow property mutation
+
+      // Disabled Airbnb rules
+      "no-underscore-dangle": "off",  // TS has private keyword; _name convention is fine
+      "no-restricted-syntax": "off",  // for...of is fine in modern TS/Node — regenerator concern is obsolete
+      "no-plusplus": "off",           // i++ in loops is universally understood
+      "no-redeclare": "off",          // TS function overloads look like redeclarations; TS compiler handles this
     },
   },
   prettierConfig, // Always last

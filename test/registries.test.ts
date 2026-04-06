@@ -1,4 +1,4 @@
-import { SMValidationException } from '@src/base/exceptions';
+import { SMValidationException } from "@src/base/SMValidationException";
 import { StateRegistry } from '@src/base/StateRegistry';
 import { TransitionRegistry } from '@src/base/TransitionRegistry';
 import { UserDefinedState } from '@src/base/UserDefinedState';

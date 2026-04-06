@@ -1,7 +1,8 @@
 import { StateType, StateStatus } from "@src/model/State";
 import type { StateMachineId, StateId, TransitionId, StateMachineStoppedEvent, StateStartEvent } from '@src/model/types';
 import { BasicStateMachine } from '@src/base/BasicStateMachine';
-import { SMValidationException, SMRuntimeException } from '@src/base/exceptions';
+import { SMValidationException } from "@src/base/SMValidationException";
+import { SMRuntimeException } from "@src/base/SMRuntimeException";
 import { StateMachine } from "@src/index";
 import { StateMachineBuilder } from "@src/base/StateMachineBuilder";
 

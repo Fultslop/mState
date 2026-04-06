@@ -1,8 +1,9 @@
+import { randomUUID } from 'crypto';
 import type { StateMachineId, StateId, TransitionId } from '../model/types';
 import type { GroupState } from '@src/model/GroupState';
 import { StateStatus } from '@src/model/State';
 import type { StateMachine } from '@src/model/StateMachine';
-import { SMValidationException } from '../base/exceptions';
+import { SMValidationException } from "@src/base/SMValidationException";
 import { BasicStateMachine } from '../base/BasicStateMachine';
 import { extractTitle, tokenize } from './tokenizer';
 import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
@@ -17,7 +18,7 @@ const STATUS_MAP: Record<string, StateStatus> = {
 
 export class MermaidParser {
   parse(diagramText: string): StateMachine {
-    const title = extractTitle(diagramText) || crypto.randomUUID();
+    const title = extractTitle(diagramText) || randomUUID();
     const tokens = tokenize(diagramText);
     const sm = new BasicStateMachine(title as StateMachineId);
     const builder = new StateMachineBuilder(sm);

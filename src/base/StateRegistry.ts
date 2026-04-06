@@ -1,6 +1,6 @@
 import type { StateId } from '../model/types';
 import type { State } from '../model/State';
-import { SMValidationException } from './exceptions';
+import { SMValidationException } from "./SMValidationException";
 
 export class StateRegistry {
   private readonly _states: Map<StateId, State> = new Map();

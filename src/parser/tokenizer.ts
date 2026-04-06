@@ -20,10 +20,11 @@ export function extractTitle(diagramText: string): string {
 
 export function tokenize(diagramText: string): Token[] {
   const body = diagramText.replace(FRONTMATTER_RE, '').replace(HEADER_RE, '');
-
   const tokens: Token[] = [];
+
   for (const raw of body.split('\n')) {
     const line = raw.trim().replace(/%%.*$/, '').trim();
+
     if (!line) continue;
 
     if (DIRECTION_RE.test(line)) {

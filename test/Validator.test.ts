@@ -2,8 +2,8 @@ import { StateStatus } from "@src/model/State";
 import type { StateId, TransitionId } from '@src/model/types';
 import { StateRegistry } from '@src/base/StateRegistry';
 import { TransitionRegistry } from '@src/base/TransitionRegistry';
-import { Validator } from '@src/base/Validator';
-import { SMValidationException } from '@src/base/exceptions';
+import { validateStateMachine } from "@src/base/Validator";
+import { SMValidationException } from "@src/base/SMValidationException";
 import { BasicTransition } from '@src/base/BasicTransition';
 import { InitialState } from '@src/base/InitialState';
 import { TerminalState } from '@src/base/TerminalState';
@@ -37,7 +37,7 @@ function makeVaidSM() {
 describe('Validator', () => {
   it('passes a valid minimal state machine', () => {
     const { sr, tr } = makeVaidSM();
-    expect(() => new Validator().validate(sr, tr)).not.toThrow();
+    expect(() => validateStateMachine(sr, tr)).not.toThrow();
   });
 
   // Rule 1: exactly one Initial
@@ -45,7 +45,7 @@ describe('Validator', () => {
     const sr = new StateRegistry();
     const tr = new TransitionRegistry();
     sr.add(new UserDefinedState(sid('s1')));
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   it('rule 1: throws when there are two top-level Initial states', () => {
@@ -54,14 +54,14 @@ describe('Validator', () => {
     sr.add(new InitialState(sid('i1')));
     sr.add(new InitialState(sid('i2')));
     sr.add(new TerminalState(sid('term')));
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 3: all states reachable
   it('rule 3: throws for unreachable state', () => {
     const { sr, tr } = makeVaidSM();
     sr.add(new UserDefinedState(sid('orphan')));
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 5: transition references valid state ids
@@ -73,7 +73,7 @@ describe('Validator', () => {
     const t = new BasicTransition(tid('t0'), sid('init'), sid('ghost'));
     tr.add(t);
     sr.get(sid('init'))!.outgoing.add(tid('t0'));
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 7: Choice must have outgoing transitions
@@ -87,7 +87,7 @@ describe('Validator', () => {
     sr.get(sid('s1'))!.outgoing.delete(tid('t1')); // remove old outgoing
     sr.get(sid('s1'))!.outgoing.add(tid('t_ch'));
     ch.incoming.add(tid('t_ch'));
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 8: no duplicate (status, exitCode) on Choice outgoing
@@ -113,7 +113,7 @@ describe('Validator', () => {
     b.outgoing.add(tid('t3')); term.incoming.add(tid('t3'));
     c.outgoing.add(tid('t4')); term.incoming.add(tid('t4'));
 
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 10: fork branch must reach a Join before Terminal
@@ -145,7 +145,7 @@ describe('Validator', () => {
     }
     join.incoming.delete(tid('t4')); // b goes to term, not join
 
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 
   // Rule 16: AnyStatus cannot have exitCode
@@ -159,6 +159,6 @@ describe('Validator', () => {
     sr.get(sid('s1'))!.outgoing.add(tid('bad'));
     extra.incoming.add(tid('bad'));
     extra.outgoing.add(tid('t1')); // re-use existing terminal transition (just add outgoing)
-    expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
 });

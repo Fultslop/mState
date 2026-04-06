@@ -5,7 +5,7 @@ import type { State } from '@src/model/State';
 import { StateRegistry } from '@src/base/StateRegistry';
 import { TransitionRegistry } from '@src/base/TransitionRegistry';
 import { TransitionRouter } from '@src/base/TransitionRouter';
-import { SMRuntimeException } from '@src/base/exceptions';
+import { SMRuntimeException } from "@src/base/SMRuntimeException";
 import { BasicTransition } from '@src/base/BasicTransition';
 import { TerminalState } from '@src/base/TerminalState';
 import { UserDefinedState } from '@src/base/UserDefinedState';

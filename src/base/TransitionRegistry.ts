@@ -1,6 +1,6 @@
 import type { TransitionId } from '../model/types';
 import type { Transition } from '../model/Transition';
-import { SMValidationException } from './exceptions';
+import { SMValidationException } from "./SMValidationException";
 
 export class TransitionRegistry {
   private readonly _transitions: Map<TransitionId, Transition> = new Map();

@@ -14,11 +14,11 @@ import { TypedEvent } from '../common/TypedEvent';
 import { StateRegistry } from './StateRegistry';
 import { TransitionRegistry } from './TransitionRegistry';
 import { TransitionRouter } from './TransitionRouter';
-import { Validator } from './Validator';
-import { SMRuntimeException } from './exceptions';
+import { validateStateMachine } from './Validator';
+import { SMRuntimeException } from "./SMRuntimeException";
+import { requiresTruthy } from '../common/requires';
 import type { InitialState } from './InitialState';
 import type { ForkState } from './ForkState';
-import { requiresTruthy } from '../common/requires';
 import type { Transition } from '../model/Transition';
 import type { GroupState } from '../model/GroupState';
 import type { JoinState } from '../model/JoinState';
@@ -39,8 +39,6 @@ export class BasicStateMachine implements StateMachine {
   private readonly _transitions = new TransitionRegistry();
 
   private readonly _router: TransitionRouter;
-
-  private readonly _validator = new Validator();
 
   private readonly _active = new Set<StateId>();
 
@@ -144,7 +142,7 @@ export class BasicStateMachine implements StateMachine {
   }
 
   validate(): void {
-    this._validator.validate(this._states, this._transitions);
+    validateStateMachine(this._states, this._transitions);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -246,6 +244,9 @@ export class BasicStateMachine implements StateMachine {
         }
         break;
       }
+
+      default:
+        throw new SMRuntimeException(`unhandled case ${String(route)}`)
     }
   }
 
@@ -299,9 +300,9 @@ export class BasicStateMachine implements StateMachine {
     const events: StateStartEvent[] = [];
     for (const tId of transitionIds) {
       const t = this._transitions.get(tId);
-      if (!t) continue;
+      requiresTruthy(t, `transition '${tId}' not found in _handleFork`);
       const target = this._states.get(t.toStateId);
-      if (!target) continue;
+      requiresTruthy(target, `state '${t.toStateId}' not found in _handleFork`);
       const fork = this._states.get(t.fromStateId);
       const clonedPayload = (fork as ForkState).clonePayload
         ? (fork as ForkState).clonePayload!(payload)

@@ -46,27 +46,39 @@ export function compareTransitions(a: Transition, b: Transition): boolean {
   );
 }
 
-export function compareStateMachines(a: StateMachine, b: StateMachine): boolean {
-  if (a.getStateCount() !== b.getStateCount()) return false;
-  if (a.getTransitionCount() !== b.getTransitionCount()) return false;
-
-  for (const id of a.getStateIds()) {
-    const stateB = b.getState(id);
-    if (!stateB) return false;
-    if (!compareStates(a.getState(id)!, stateB)) return false;
-  }
-  for (const id of b.getStateIds()) {
-    if (!a.getState(id)) return false;
-  }
-
-  for (const id of a.getTransitionIds()) {
-    const tB = b.getTransition(id);
-    if (!tB) return false;
-    if (!compareTransitions(a.getTransition(id)!, tB)) return false;
-  }
-  for (const id of b.getTransitionIds()) {
-    if (!a.getTransition(id)) return false;
-  }
-
-  return true;
+/**
+ * Check if both machines have the same states and
+ * transitions
+ * @param a 
+ * @param b 
+ * @returns 
+ */
+function hasEqualElementCounts(a: StateMachine, b: StateMachine): boolean {
+  return (a.getStateCount() === b.getStateCount()) 
+    &&  (a.getTransitionCount() === b.getTransitionCount());
 }
+
+function hasSameStates(a: StateMachine, b: StateMachine): boolean {
+  return a.getStateIds().every( id => {
+      const stateB = b.getState(id);
+      return stateB
+        && compareStates(a.getState(id)!, stateB);
+    })
+    && b.getStateIds().every( id => a.getState(id));
+}
+
+function hasSameTransitions(a: StateMachine, b: StateMachine): boolean {
+  return a.getTransitionIds().every( id => {
+      const transitionB = b.getTransition(id);
+      return transitionB
+        && compareTransitions(a.getTransition(id)!, transitionB);
+    })
+    && b.getTransitionIds().every( id => a.getTransition(id));
+}
+
+export function compareStateMachines(a: StateMachine, b: StateMachine): boolean {
+  return hasEqualElementCounts(a,b)
+    && hasSameStates(a,b) 
+    && hasSameTransitions(a,b);
+}
+
