@@ -15,9 +15,9 @@ function build() {
   const lc   = builder.createState(sid('loadConfig'));
   const exec = builder.createState(sid('execute'));
   const term = builder.createTerminal(sid('terminal'));
-  builder.createTransition(tid('t0'), init.id, lc.id);
-  builder.createTransition(tid('t1'), lc.id, exec.id, StateStatus.Ok);
-  builder.createTransition(tid('t2'), exec.id, term.id);
+  builder.createTransition(tid('initial-->loadConfig'), init.id, lc.id);
+  builder.createTransition(tid('loadConfig-->execute:ok'), lc.id, exec.id, StateStatus.Ok);
+  builder.createTransition(tid('execute-->terminal'), exec.id, term.id);
   return sm;
 }
 

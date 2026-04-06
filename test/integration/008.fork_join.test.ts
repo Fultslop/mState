@@ -20,14 +20,14 @@ function build() {
   const out  = builder.createState(sid('ProcessOutcome'));
   const term = builder.createTerminal(sid('terminal'));
 
-  builder.createTransition(tid('t0'), init.id, s1.id);
-  builder.createTransition(tid('t1'), s1.id, fork.id);
-  builder.createTransition(tid('f1'), fork.id, a.id);
-  builder.createTransition(tid('f2'), fork.id, b.id);
-  builder.createTransition(tid('j1'), a.id, join.id);
-  builder.createTransition(tid('j2'), b.id, join.id);
-  builder.createTransition(tid('t2'), join.id, out.id);
-  builder.createTransition(tid('t3'), out.id, term.id);
+  builder.createTransition(tid('initial-->init'), init.id, s1.id);
+  builder.createTransition(tid('init-->fork_state'), s1.id, fork.id);
+  builder.createTransition(tid('fork_state-->RunServiceA'), fork.id, a.id);
+  builder.createTransition(tid('fork_state-->RunServiceB'), fork.id, b.id);
+  builder.createTransition(tid('RunServiceA-->join_state'), a.id, join.id);
+  builder.createTransition(tid('RunServiceB-->join_state'), b.id, join.id);
+  builder.createTransition(tid('join_state-->ProcessOutcome'), join.id, out.id);
+  builder.createTransition(tid('ProcessOutcome-->terminal'), out.id, term.id);
   return sm;
 }
 

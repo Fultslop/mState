@@ -11,15 +11,15 @@ const tid  = (s: string) => s as TransitionId;
 function build() {
   const sm        = new BasicStateMachine(smid('groupExample'));
   const builder   = new StateMachineBuilder(sm);
-  const rootInit  = builder.createInitial(sid('rootInit'));
+  const rootInit  = builder.createInitial(sid('initial'));
   const group     = builder.createGroup(sid('group'));
-  const groupInit = builder.createInitial(sid('groupInit'));
+  const groupInit = builder.createInitial(sid('group__initial'));
   const step1     = builder.createState(sid('step1'));
   const step2     = builder.createState(sid('step2'));
-  const groupTerm = builder.createTerminal(sid('groupTerm'));
+  const groupTerm = builder.createTerminal(sid('group__terminal'));
   const ch        = builder.createChoice(sid('groupChoice'));
   const logErr    = builder.createState(sid('logError'));
-  const rootTerm  = builder.createTerminal(sid('rootTerm'));
+  const rootTerm  = builder.createTerminal(sid('terminal'));
 
   // Register group members
   group.addState(groupInit);
@@ -28,16 +28,16 @@ function build() {
   group.addState(groupTerm);
 
   // Top-level transitions
-  builder.createTransition(tid('t0'), rootInit.id, group.id);
-  builder.createTransition(tid('t1'), group.id, ch.id);
-  builder.createTransition(tid('t2'), ch.id, rootTerm.id);
-  builder.createTransition(tid('t3'), ch.id, logErr.id, StateStatus.Error);
-  builder.createTransition(tid('t4'), logErr.id, rootTerm.id);
+  builder.createTransition(tid('initial-->group'), rootInit.id, group.id);
+  builder.createTransition(tid('group-->groupChoice'), group.id, ch.id);
+  builder.createTransition(tid('groupChoice-->terminal'), ch.id, rootTerm.id);
+  builder.createTransition(tid('groupChoice-->logError:error'), ch.id, logErr.id, StateStatus.Error);
+  builder.createTransition(tid('logError-->terminal'), logErr.id, rootTerm.id);
 
   // Group-internal transitions
-  builder.createTransition(tid('gi0'), groupInit.id, step1.id);
-  builder.createTransition(tid('gi1'), step1.id, step2.id, StateStatus.Ok);
-  builder.createTransition(tid('gi2'), step2.id, groupTerm.id, StateStatus.Ok);
+  builder.createTransition(tid('group__initial-->step1'), groupInit.id, step1.id);
+  builder.createTransition(tid('step1-->step2:ok'), step1.id, step2.id, StateStatus.Ok);
+  builder.createTransition(tid('step2-->group__terminal:ok'), step2.id, groupTerm.id, StateStatus.Ok);
 
   return sm;
 }

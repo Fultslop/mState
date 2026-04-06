@@ -15,8 +15,8 @@ describe('spec 002 — basic single state', () => {
     const init = builder.createInitial(sid('initial'));
     const s1   = builder.createState(sid('initialize'));
     const term = builder.createTerminal(sid('terminal'));
-    builder.createTransition(tid('t0'), init.id, s1.id);
-    builder.createTransition(tid('t1'), s1.id, term.id);
+    builder.createTransition(tid('initial-->initialize'), init.id, s1.id);
+    builder.createTransition(tid('initialize-->terminal'), s1.id, term.id);
     return sm;
   }
 

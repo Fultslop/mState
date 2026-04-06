@@ -17,12 +17,12 @@ function build() {
   const exec = builder.createState(sid('execute'));
   const err  = builder.createState(sid('logError'));
   const term = builder.createTerminal(sid('terminal'));
-  builder.createTransition(tid('t0'), init.id, lc.id);
-  builder.createTransition(tid('t1'), lc.id, ch.id);
-  builder.createTransition(tid('t2'), ch.id, exec.id, StateStatus.Ok);
-  builder.createTransition(tid('t3'), ch.id, err.id, StateStatus.Error);
-  builder.createTransition(tid('t4'), exec.id, term.id);
-  builder.createTransition(tid('t5'), err.id, term.id);
+  builder.createTransition(tid('initial-->loadConfig'), init.id, lc.id);
+  builder.createTransition(tid('loadConfig-->loadConfigChoice'), lc.id, ch.id);
+  builder.createTransition(tid('loadConfigChoice-->execute:ok'), ch.id, exec.id, StateStatus.Ok);
+  builder.createTransition(tid('loadConfigChoice-->logError:error'), ch.id, err.id, StateStatus.Error);
+  builder.createTransition(tid('execute-->terminal'), exec.id, term.id);
+  builder.createTransition(tid('logError-->terminal'), err.id, term.id);
   return sm;
 }
 
@@ -77,12 +77,12 @@ describe('spec 005 — transition selection via Choice', () => {
     const exec = builder.createState(sid('exec'));
     const def  = builder.createState(sid('default'));
     const term = builder.createTerminal(sid('term'));
-    builder.createTransition(tid('t0'), init.id, lc.id);
-    builder.createTransition(tid('t1'), lc.id, ch.id);
-    builder.createTransition(tid('t2'), ch.id, exec.id, StateStatus.Ok);
-    builder.createTransition(tid('t3'), ch.id, def.id);
-    builder.createTransition(tid('t4'), exec.id, term.id);
-    builder.createTransition(tid('t5'), def.id, term.id);
+    builder.createTransition(tid('initial-->lc'), init.id, lc.id);
+    builder.createTransition(tid('lc-->ch'), lc.id, ch.id);
+    builder.createTransition(tid('ch-->exec:ok'), ch.id, exec.id, StateStatus.Ok);
+    builder.createTransition(tid('ch-->default'), ch.id, def.id);
+    builder.createTransition(tid('exec-->term'), exec.id, term.id);
+    builder.createTransition(tid('default-->term'), def.id, term.id);
 
     sm.start();
     const started: string[] = [];

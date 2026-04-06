@@ -15,14 +15,9 @@ const STATUS_MAP: Record<string, StateStatus> = {
   any: StateStatus.AnyStatus,
 };
 
-let _counter = 0;
-function nextId(prefix: string): string {
-  return `${prefix}#${++_counter}`;
-}
-
 export class MermaidParser {
   parse(diagramText: string): IStateMachine {
-    const title = extractTitle(diagramText) || nextId('diagram');
+    const title = extractTitle(diagramText) || crypto.randomUUID();
     const tokens = tokenize(diagramText);
     const sm = new BasicStateMachine(title as StateMachineId);
     const builder = new StateMachineBuilder(sm);
@@ -93,7 +88,7 @@ export class MermaidParser {
     const ensureInitial = (context: string | null): string => {
       const key = context ?? '__root__';
       if (initIds.has(key)) return initIds.get(key)!;
-      const id = nextId(context ? `${context}_init` : 'init');
+      const id = context ? `${context}__initial` : 'initial';
       builder.createInitial(id as StateId);
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
@@ -107,7 +102,7 @@ export class MermaidParser {
     const ensureTerminal = (context: string | null): string => {
       const key = context ?? '__root__';
       if (termIds.has(key)) return termIds.get(key)!;
-      const id = nextId(context ? `${context}_term` : 'term');
+      const id = context ? `${context}__terminal` : 'terminal';
       builder.createTerminal(id as StateId);
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
@@ -164,7 +159,8 @@ export class MermaidParser {
         exitCode = parts[1]?.trim() || undefined;
       }
 
-      const tId = nextId('t') as TransitionId;
+      const guardKey = [status ?? '', exitCode ?? ''].filter(Boolean).join('/');
+      const tId = (guardKey ? `${fromId}-->${toId}:${guardKey}` : `${fromId}-->${toId}`) as TransitionId;
       builder.createTransition(tId, fromId as StateId, toId as StateId, status, exitCode);
     }
 

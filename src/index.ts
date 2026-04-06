@@ -17,3 +17,4 @@ export type { IGroupState } from './IGroupState';
 export { SMValidationException, SMRuntimeException } from './exceptions';
 export { BasicStateMachine as StateMachine } from './BasicStateMachine';
 export { createStateModel } from './parser/createStateModel';
+export { compareStates, compareTransitions, compareStateMachines } from './compare';

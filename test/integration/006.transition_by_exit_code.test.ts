@@ -18,14 +18,14 @@ function build() {
   const b    = builder.createState(sid('execute_b'));
   const err  = builder.createState(sid('logError'));
   const term = builder.createTerminal(sid('terminal'));
-  builder.createTransition(tid('t0'), init.id, lc.id);
-  builder.createTransition(tid('t1'), lc.id, ch.id);
-  builder.createTransition(tid('t2'), ch.id, a.id, StateStatus.Ok, 'planA');
-  builder.createTransition(tid('t3'), ch.id, b.id, StateStatus.Ok, 'planB');
-  builder.createTransition(tid('t4'), ch.id, err.id, StateStatus.AnyStatus);
-  builder.createTransition(tid('t5'), a.id, term.id);
-  builder.createTransition(tid('t6'), b.id, term.id);
-  builder.createTransition(tid('t7'), err.id, term.id);
+  builder.createTransition(tid('initial-->loadConfig'), init.id, lc.id);
+  builder.createTransition(tid('loadConfig-->ch'), lc.id, ch.id);
+  builder.createTransition(tid('ch-->execute_a:ok/planA'), ch.id, a.id, StateStatus.Ok, 'planA');
+  builder.createTransition(tid('ch-->execute_b:ok/planB'), ch.id, b.id, StateStatus.Ok, 'planB');
+  builder.createTransition(tid('ch-->logError:any'), ch.id, err.id, StateStatus.AnyStatus);
+  builder.createTransition(tid('execute_a-->terminal'), a.id, term.id);
+  builder.createTransition(tid('execute_b-->terminal'), b.id, term.id);
+  builder.createTransition(tid('logError-->terminal'), err.id, term.id);
   return sm;
 }
 
