@@ -1,16 +1,16 @@
-import { SMStateType } from '@src/types';
-import type { SMStateId, SMTransitionId } from '@src/types';
-import type { SMStateStartEvent } from '@src/types';
+import { StateType } from "@src/IState";
+import type { StateId, TransitionId } from '@src/types';
+import type { StateStartEvent } from '@src/types';
 import { JoinState } from '@src/states/JoinState';
 import { GroupState } from '@src/states/GroupState';
 import { UserDefinedState } from '@src/states/UserDefinedState';
 
-const sid = (s: string) => s as SMStateId;
-const tid = (s: string) => s as SMTransitionId;
+const sid = (s: string) => s as StateId;
+const tid = (s: string) => s as TransitionId;
 
 describe('JoinState', () => {
   it('has type Join', () => {
-    expect(new JoinState(sid('j')).type).toBe(SMStateType.Join);
+    expect(new JoinState(sid('j')).type).toBe(StateType.Join);
   });
 
   it('is not complete with no incoming dependencies met', () => {
@@ -24,11 +24,11 @@ describe('JoinState', () => {
     const j = new JoinState(sid('j'));
     j.incoming.add(tid('t1'));
     j.incoming.add(tid('t2'));
-    const evt1: SMStateStartEvent = {
+    const evt1: StateStartEvent = {
       fromStateId: sid('a'), transitionId: tid('t1'),
       toStateId: sid('j'), payload: undefined,
     };
-    const evt2: SMStateStartEvent = {
+    const evt2: StateStartEvent = {
       fromStateId: sid('b'), transitionId: tid('t2'),
       toStateId: sid('j'), payload: undefined,
     };
@@ -41,7 +41,7 @@ describe('JoinState', () => {
   it('receivedPayloads returns the collected events', () => {
     const j = new JoinState(sid('j'));
     j.incoming.add(tid('t1'));
-    const evt: SMStateStartEvent = {
+    const evt: StateStartEvent = {
       fromStateId: sid('a'), transitionId: tid('t1'),
       toStateId: sid('j'), payload: 42,
     };
@@ -53,7 +53,7 @@ describe('JoinState', () => {
   it('reset clears received payloads', () => {
     const j = new JoinState(sid('j'));
     j.incoming.add(tid('t1'));
-    const evt: SMStateStartEvent = {
+    const evt: StateStartEvent = {
       fromStateId: sid('a'), transitionId: tid('t1'),
       toStateId: sid('j'), payload: undefined,
     };
@@ -66,7 +66,7 @@ describe('JoinState', () => {
 
 describe('GroupState', () => {
   it('has type Group', () => {
-    expect(new GroupState(sid('g')).type).toBe(SMStateType.Group);
+    expect(new GroupState(sid('g')).type).toBe(StateType.Group);
   });
 
   it('tracks member states', () => {

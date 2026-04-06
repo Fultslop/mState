@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { createStateModel } from '@src/parser/createStateModel';
-import { SMStateType } from '@src/types';
+import { StateType } from "@src/IState";
 
 const INLINE = `
 ---
@@ -50,8 +50,8 @@ describe('createStateModel (string overload)', () => {
     const [sm] = createStateModel(INLINE);
     const ids = sm!.getStateIds();
     expect(ids.some(id => String(id) === 's1')).toBe(true);
-    expect(ids.some(id => sm!.getState(id)?.type === SMStateType.Initial)).toBe(true);
-    expect(ids.some(id => sm!.getState(id)?.type === SMStateType.Terminal)).toBe(true);
+    expect(ids.some(id => sm!.getState(id)?.type === StateType.Initial)).toBe(true);
+    expect(ids.some(id => sm!.getState(id)?.type === StateType.Terminal)).toBe(true);
   });
 });
 

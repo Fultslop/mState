@@ -1,15 +1,15 @@
 // src/__integration__/007.payloads.test.ts
-import { StateMachine } from '../../src/StateMachine';
-import { SMStatus } from '../../src/types';
-import type { SMStateMachineId, SMStateId, SMTransitionId, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent } from '../../src/types';
+import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateStatus } from "@src/IState";
+import type { StateMachineId, StateId, TransitionId, StateStartEvent, StateStoppedEvent, StateMachineStoppedEvent } from '../../src/types';
 
-const smid = (s: string) => s as SMStateMachineId;
-const sid  = (s: string) => s as SMStateId;
-const tid  = (s: string) => s as SMTransitionId;
+const smid = (s: string) => s as StateMachineId;
+const sid  = (s: string) => s as StateId;
+const tid  = (s: string) => s as TransitionId;
 
 describe('spec 007 — payloads', () => {
   it('payload from onStopped is forwarded in onStateStopped and onStateStart', () => {
-    const sm   = new StateMachine(smid('payloads'));
+    const sm   = new BasicStateMachine(smid('payloads'));
     const init = sm.createInitial(sid('initial'));
     const s1   = sm.createState(sid('init'));
     const s2   = sm.createState(sid('execute'));
@@ -19,9 +19,9 @@ describe('spec 007 — payloads', () => {
     sm.createTransition(tid('t2'), s2.id, term.id);
 
     sm.start();
-    const stoppedEvts: SMStateStoppedEvent[] = [];
-    const startEvts:   SMStateStartEvent[]   = [];
-    const smStoppedEvts: SMStoppedEvent[]    = [];
+    const stoppedEvts: StateStoppedEvent[] = [];
+    const startEvts:   StateStartEvent[]   = [];
+    const smStoppedEvts: StateMachineStoppedEvent[]    = [];
 
     sm.onStateStopped.add(e => stoppedEvts.push(e));
     sm.onStateStart.add(e => {
@@ -30,11 +30,11 @@ describe('spec 007 — payloads', () => {
     });
     sm.onSMStopped.add(e => smStoppedEvts.push(e));
 
-    sm.onStopped(sid('init'), SMStatus.Ok, undefined, [1, 2, 3]);
+    sm.onStopped(sid('init'), StateStatus.Ok, undefined, [1, 2, 3]);
     expect(stoppedEvts[0]?.payload).toEqual([1, 2, 3]);
     expect(startEvts[0]?.payload).toEqual([1, 2, 3]);
 
-    sm.onStopped(sid('execute'), SMStatus.Ok, undefined, ['invoices']);
+    sm.onStopped(sid('execute'), StateStatus.Ok, undefined, ['invoices']);
     expect(smStoppedEvts[0]?.payload).toEqual(['invoices']);
   });
 });

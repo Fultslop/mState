@@ -1,9 +1,9 @@
-import { ISMState } from './ISMState';
-import type { SMStateId } from './types';
+import { IState } from './IState';
+import type { StateId } from './types';
 
 
-export interface IGroupState extends ISMState {
-  readonly memberIds: Set<SMStateId>;
-  hasMember(stateId: SMStateId): boolean;
-  addMember(state: ISMState): void;
+export interface IGroupState extends IState {
+  readonly memberIds: Set<StateId>;
+  hasMember(stateId: StateId): boolean;
+  addMember(state: IState): void;
 }

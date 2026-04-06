@@ -1,11 +1,11 @@
-import type { SMStateId} from '../types';
-import { SMStateType } from '../types';
+import type { StateId} from '../types';
+import { StateType } from "@src/IState";
 import { BaseState } from './BaseState';
 
 export class InitialState extends BaseState {
   readonly payload: unknown;
-  constructor(id: SMStateId, payload?: unknown) {
-    super(id, SMStateType.Initial);
+  constructor(id: StateId, payload?: unknown) {
+    super(id, StateType.Initial);
     this.payload = payload;
   }
 }

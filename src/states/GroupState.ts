@@ -1,21 +1,21 @@
-import type { SMStateId} from '../types';
-import { SMStateType } from '../types';
+import type { StateId} from '../types';
+import { StateType } from "@src/IState";
 import type { IGroupState } from '@src/IGroupState';
-import type { ISMState } from '@src/ISMState';
+import type { IState } from '@src/IState';
 import { BaseState } from './BaseState';
 
 export class GroupState extends BaseState implements IGroupState {
-  readonly memberIds: Set<SMStateId> = new Set();
+  readonly memberIds: Set<StateId> = new Set();
 
-  constructor(id: SMStateId, config?: Record<string, unknown>) {
-    super(id, SMStateType.Group, config);
+  constructor(id: StateId, config?: Record<string, unknown>) {
+    super(id, StateType.Group, config);
   }
 
-  addMember(state: ISMState): void {
+  addMember(state: IState): void {
     this.memberIds.add(state.id);
   }
 
-  hasMember(stateId: SMStateId): boolean {
+  hasMember(stateId: StateId): boolean {
     return this.memberIds.has(stateId);
   }
 }

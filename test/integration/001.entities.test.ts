@@ -1,17 +1,17 @@
 // src/__integration__/001.entities.test.ts
 // Verifies all entity types are constructable and branded IDs are distinct types.
-import { StateMachine } from '../../src/StateMachine';
-import { SMStatus, SMStateType } from '../../src/types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../../src/types';
+import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateStatus, StateType } from "@src/IState";
+import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 import { SMValidationException, SMRuntimeException } from '../../src/exceptions';
 
-const smid = (s: string) => s as SMStateMachineId;
-const sid  = (s: string) => s as SMStateId;
-const tid  = (s: string) => s as SMTransitionId;
+const smid = (s: string) => s as StateMachineId;
+const sid  = (s: string) => s as StateId;
+const tid  = (s: string) => s as TransitionId;
 
 describe('spec 001 — entities', () => {
   it('creates all state types without error', () => {
-    const sm = new StateMachine(smid('entities'));
+    const sm = new BasicStateMachine(smid('entities'));
     expect(() => {
       sm.createInitial(sid('init'));
       sm.createState(sid('s1'));
@@ -25,31 +25,31 @@ describe('spec 001 — entities', () => {
   });
 
   it('each state type has the correct SMStateType', () => {
-    const sm = new StateMachine(smid('types'));
-    expect(sm.createInitial(sid('i')).type).toBe(SMStateType.Initial);
-    expect(sm.createState(sid('s')).type).toBe(SMStateType.UserDefined);
-    expect(sm.createTerminal(sid('t')).type).toBe(SMStateType.Terminal);
-    expect(sm.createChoice(sid('c')).type).toBe(SMStateType.Choice);
-    expect(sm.createFork(sid('f')).type).toBe(SMStateType.Fork);
-    expect(sm.createJoin(sid('j')).type).toBe(SMStateType.Join);
-    expect(sm.createGroup(sid('g')).type).toBe(SMStateType.Group);
+    const sm = new BasicStateMachine(smid('types'));
+    expect(sm.createInitial(sid('i')).type).toBe(StateType.Initial);
+    expect(sm.createState(sid('s')).type).toBe(StateType.UserDefined);
+    expect(sm.createTerminal(sid('t')).type).toBe(StateType.Terminal);
+    expect(sm.createChoice(sid('c')).type).toBe(StateType.Choice);
+    expect(sm.createFork(sid('f')).type).toBe(StateType.Fork);
+    expect(sm.createJoin(sid('j')).type).toBe(StateType.Join);
+    expect(sm.createGroup(sid('g')).type).toBe(StateType.Group);
   });
 
   it('states begin with SMStatus.None', () => {
-    const sm = new StateMachine(smid('status'));
+    const sm = new BasicStateMachine(smid('status'));
     const s = sm.createState(sid('s1'));
-    expect(s.stateStatus).toBe(SMStatus.None);
+    expect(s.stateStatus).toBe(StateStatus.None);
   });
 
   it('createTransition wires incoming/outgoing and returns the transition', () => {
-    const sm = new StateMachine(smid('trans'));
+    const sm = new BasicStateMachine(smid('trans'));
     const a = sm.createState(sid('a'));
     const b = sm.createState(sid('b'));
-    const t = sm.createTransition(tid('t1'), sid('a'), sid('b'), SMStatus.Ok, 'code');
+    const t = sm.createTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok, 'code');
     expect(t.id).toBe(tid('t1'));
     expect(t.fromStateId).toBe(sid('a'));
     expect(t.toStateId).toBe(sid('b'));
-    expect(t.status).toBe(SMStatus.Ok);
+    expect(t.status).toBe(StateStatus.Ok);
     expect(t.exitCode).toBe('code');
     expect(a.outgoing.has(tid('t1'))).toBe(true);
     expect(b.incoming.has(tid('t1'))).toBe(true);

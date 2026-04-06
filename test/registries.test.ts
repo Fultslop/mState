@@ -2,11 +2,11 @@ import { SMValidationException } from '@src/exceptions';
 import { StateRegistry } from '@src/StateRegistry';
 import { TransitionRegistry } from '@src/TransitionRegistry';
 import { UserDefinedState } from '@src/states/UserDefinedState';
-import { SMTransition } from '@src/SMTransition';
-import type { SMStateId, SMTransitionId } from '@src/types';
+import { Transition } from '@src/Transition';
+import type { StateId, TransitionId } from '@src/types';
 
-const sid = (s: string) => s as SMStateId;
-const tid = (s: string) => s as SMTransitionId;
+const sid = (s: string) => s as StateId;
+const tid = (s: string) => s as TransitionId;
 
 describe('StateRegistry', () => {
   let reg: StateRegistry;
@@ -62,20 +62,20 @@ describe('TransitionRegistry', () => {
   });
 
   it('adds and retrieves a transition', () => {
-    const t = new SMTransition(tid('t1'), sid('a'), sid('b'));
+    const t = new Transition(tid('t1'), sid('a'), sid('b'));
     reg.add(t);
     expect(reg.get(tid('t1'))).toBe(t);
     expect(reg.count()).toBe(1);
   });
 
   it('throws on duplicate id', () => {
-    reg.add(new SMTransition(tid('t1'), sid('a'), sid('b')));
-    expect(() => reg.add(new SMTransition(tid('t1'), sid('a'), sid('b'))))
+    reg.add(new Transition(tid('t1'), sid('a'), sid('b')));
+    expect(() => reg.add(new Transition(tid('t1'), sid('a'), sid('b'))))
       .toThrow(SMValidationException);
   });
 
   it('removes a transition', () => {
-    reg.add(new SMTransition(tid('t1'), sid('a'), sid('b')));
+    reg.add(new Transition(tid('t1'), sid('a'), sid('b')));
     reg.remove(tid('t1'));
     expect(reg.get(tid('t1'))).toBeUndefined();
   });

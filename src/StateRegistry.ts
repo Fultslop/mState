@@ -1,22 +1,22 @@
-import type { SMStateId } from './types';
-import type { ISMState } from './ISMState';
+import type { StateId } from './types';
+import type { IState } from './IState';
 import { SMValidationException } from './exceptions';
 
 export class StateRegistry {
-  private readonly _states: Map<SMStateId, ISMState> = new Map();
+  private readonly _states: Map<StateId, IState> = new Map();
 
-  add(state: ISMState): void {
+  add(state: IState): void {
     if (this._states.has(state.id)) {
       throw new SMValidationException(`Duplicate state id: '${state.id}'`);
     }
     this._states.set(state.id, state);
   }
 
-  remove(id: SMStateId): void {
+  remove(id: StateId): void {
     this._states.delete(id);
   }
 
-  get(id: SMStateId): ISMState | undefined {
+  get(id: StateId): IState | undefined {
     return this._states.get(id);
   }
 
@@ -24,11 +24,11 @@ export class StateRegistry {
     return this._states.size;
   }
 
-  ids(): ReadonlyArray<SMStateId> {
+  ids(): ReadonlyArray<StateId> {
     return Array.from(this._states.keys());
   }
 
-  all(): ReadonlyArray<ISMState> {
+  all(): ReadonlyArray<IState> {
     return Array.from(this._states.values());
   }
 }

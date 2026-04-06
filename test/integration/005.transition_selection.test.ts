@@ -1,14 +1,14 @@
 // src/__integration__/005.transition_selection.test.ts
-import { StateMachine } from '../../src/StateMachine';
-import { SMStatus } from '../../src/types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../../src/types';
+import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateStatus } from "@src/IState";
+import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
-const smid = (s: string) => s as SMStateMachineId;
-const sid  = (s: string) => s as SMStateId;
-const tid  = (s: string) => s as SMTransitionId;
+const smid = (s: string) => s as StateMachineId;
+const sid  = (s: string) => s as StateId;
+const tid  = (s: string) => s as TransitionId;
 
 function build() {
-  const sm   = new StateMachine(smid('transitionSelection'));
+  const sm   = new BasicStateMachine(smid('transitionSelection'));
   const init = sm.createInitial(sid('initial'));
   const lc   = sm.createState(sid('loadConfig'));
   const ch   = sm.createChoice(sid('loadConfigChoice'));
@@ -17,8 +17,8 @@ function build() {
   const term = sm.createTerminal(sid('terminal'));
   sm.createTransition(tid('t0'), init.id, lc.id);
   sm.createTransition(tid('t1'), lc.id, ch.id);
-  sm.createTransition(tid('t2'), ch.id, exec.id, SMStatus.Ok);
-  sm.createTransition(tid('t3'), ch.id, err.id, SMStatus.Error);
+  sm.createTransition(tid('t2'), ch.id, exec.id, StateStatus.Ok);
+  sm.createTransition(tid('t3'), ch.id, err.id, StateStatus.Error);
   sm.createTransition(tid('t4'), exec.id, term.id);
   sm.createTransition(tid('t5'), err.id, term.id);
   return sm;
@@ -33,7 +33,7 @@ describe('spec 005 — transition selection via Choice', () => {
       const evt = Array.isArray(e) ? e[0]! : e;
       started.push(String(evt.toStateId));
     });
-    sm.onStopped(sid('loadConfig'), SMStatus.Ok);
+    sm.onStopped(sid('loadConfig'), StateStatus.Ok);
     expect(started).toContain('execute');
     expect(started).not.toContain('logError');
   });
@@ -46,7 +46,7 @@ describe('spec 005 — transition selection via Choice', () => {
       const evt = Array.isArray(e) ? e[0]! : e;
       started.push(String(evt.toStateId));
     });
-    sm.onStopped(sid('loadConfig'), SMStatus.Error);
+    sm.onStopped(sid('loadConfig'), StateStatus.Error);
     expect(started).toContain('logError');
     expect(started).not.toContain('execute');
   });
@@ -61,13 +61,13 @@ describe('spec 005 — transition selection via Choice', () => {
       starts.push(String(evt.toStateId));
     });
     sm.onStateStopped.add(e => stopped.push(String(e.stateId)));
-    sm.onStopped(sid('loadConfig'), SMStatus.Ok);
+    sm.onStopped(sid('loadConfig'), StateStatus.Ok);
     expect(starts).not.toContain('loadConfigChoice');
     expect(stopped).not.toContain('loadConfigChoice');
   });
 
   it('default (unlabeled) branch catches any other status', () => {
-    const sm   = new StateMachine(smid('defaultBranch'));
+    const sm   = new BasicStateMachine(smid('defaultBranch'));
     const init = sm.createInitial(sid('initial'));
     const lc   = sm.createState(sid('lc'));
     const ch   = sm.createChoice(sid('ch'));
@@ -76,7 +76,7 @@ describe('spec 005 — transition selection via Choice', () => {
     const term = sm.createTerminal(sid('term'));
     sm.createTransition(tid('t0'), init.id, lc.id);
     sm.createTransition(tid('t1'), lc.id, ch.id);
-    sm.createTransition(tid('t2'), ch.id, exec.id, SMStatus.Ok);
+    sm.createTransition(tid('t2'), ch.id, exec.id, StateStatus.Ok);
     sm.createTransition(tid('t3'), ch.id, def.id);
     sm.createTransition(tid('t4'), exec.id, term.id);
     sm.createTransition(tid('t5'), def.id, term.id);
@@ -87,7 +87,7 @@ describe('spec 005 — transition selection via Choice', () => {
       const evt = Array.isArray(e) ? e[0]! : e;
       started.push(String(evt.toStateId));
     });
-    sm.onStopped(sid('lc'), SMStatus.Exception);
+    sm.onStopped(sid('lc'), StateStatus.Exception);
     expect(started).toContain('default');
     expect(started).not.toContain('exec');
   });

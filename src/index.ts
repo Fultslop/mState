@@ -1,15 +1,14 @@
-export { SMStatus, SMStateType } from './types';
 export type {
-  SMStateMachineId, SMStateId, SMTransitionId,
-  SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent,
+  StateMachineId as SMStateMachineId, StateId as SMStateId, TransitionId as SMTransitionId,
+  StateMachineStartedEvent as SMStartedEvent, StateStartEvent as SMStateStartEvent, StateStoppedEvent as SMStateStoppedEvent, StateMachineStoppedEvent as SMStoppedEvent,
 } from './types';
 
-export type { ISMState } from './ISMState';
-export type { ISMTransition } from './ISMTransition';
-export type { ISMStateMachine } from './ISMStateMachine';
+export type { StateStatus, StateType, IState } from './IState';
+export type { ITransition as ISMTransition } from './ITransition';
+export type { IStateMachine as ISMStateMachine } from './IStateMachine';
 export type { IJoinState } from './IJoinState';
 export type { IGroupState } from './IGroupState';
 
 export { SMValidationException, SMRuntimeException } from './exceptions';
-export { StateMachine } from './StateMachine';
+export { BasicStateMachine as StateMachine } from './BasicStateMachine';
 export { createStateModel } from './parser/createStateModel';

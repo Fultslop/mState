@@ -1,14 +1,14 @@
-import { SMStateType, SMStatus } from './types';
-import type { SMStateId, SMTransitionId } from './types';
-import type { ISMTransition } from './ISMTransition';
-import type { ISMState } from './ISMState';
+import { StateType, StateStatus } from "./IState";
+import type { StateId, TransitionId } from './types';
+import type { ITransition } from './ITransition';
+import type { IState } from './IState';
 import type { StateRegistry } from './StateRegistry';
 import type { TransitionRegistry } from './TransitionRegistry';
 import { SMRuntimeException } from './exceptions';
 
 export type RouteResult =
-  | { kind: 'transition'; transitionIds: SMTransitionId[] }
-  | { kind: 'terminal'; terminalId: SMStateId }
+  | { kind: 'transition'; transitionIds: TransitionId[] }
+  | { kind: 'terminal'; terminalId: StateId }
   | { kind: 'noMatch' }
   | { kind: 'none' };
 
@@ -18,29 +18,29 @@ export class TransitionRouter {
     private readonly _transitions: TransitionRegistry,
   ) {}
 
-  resolve(fromStateId: SMStateId, status: SMStatus, exitCode?: string): RouteResult {
+  resolve(fromStateId: StateId, status: StateStatus, exitCode?: string): RouteResult {
     const state = this._states.get(fromStateId);
     if (!state) {
       throw new SMRuntimeException(`State '${fromStateId}' not found in router`);
     }
 
-    if (state.type === SMStateType.Fork) {
+    if (state.type === StateType.Fork) {
       return this._resolveFork(state);
     }
 
     return this._resolveOutgoing(state, status, exitCode);
   }
 
-  private _resolveFork(state: ISMState): RouteResult {
+  private _resolveFork(state: IState): RouteResult {
     const ids = Array.from(state.outgoing);
     if (ids.length === 0) return { kind: 'none' };
     return { kind: 'transition', transitionIds: ids };
   }
 
-  private _resolveOutgoing(state: ISMState, status: SMStatus, exitCode?: string): RouteResult {
+  private _resolveOutgoing(state: IState, status: StateStatus, exitCode?: string): RouteResult {
     const outgoing = Array.from(state.outgoing)
       .map(id => this._transitions.get(id))
-      .filter((t): t is ISMTransition => t !== undefined);
+      .filter((t): t is ITransition => t !== undefined);
 
     if (outgoing.length === 0) return { kind: 'none' };
 
@@ -59,21 +59,21 @@ export class TransitionRouter {
       throw new SMRuntimeException(`Target state '${first.toStateId}' not found`);
     }
 
-    if (target.type === SMStateType.Terminal) {
+    if (target.type === StateType.Terminal) {
       return { kind: 'terminal', terminalId: target.id };
     }
 
-    if (target.type === SMStateType.Choice) {
+    if (target.type === StateType.Choice) {
       return this._resolveOutgoing(target, status, exitCode);
     }
 
     return { kind: 'transition', transitionIds: [first.id] };
   }
 
-  private _matches(t: ISMTransition, status: SMStatus, exitCode?: string): boolean {
+  private _matches(t: ITransition, status: StateStatus, exitCode?: string): boolean {
     const statusOk =
       t.status === undefined ||
-      t.status === SMStatus.AnyStatus ||
+      t.status === StateStatus.AnyStatus ||
       t.status === status;
 
     const exitCodeOk =

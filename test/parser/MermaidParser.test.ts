@@ -1,5 +1,5 @@
 import { MermaidParser } from '@src/parser/MermaidParser';
-import { SMStateType, SMStatus } from '@src/types';
+import { StateType, StateStatus } from "@src/IState";
 
 const SIMPLE = `
 ---
@@ -78,8 +78,8 @@ describe('MermaidParser', () => {
   it('creates Initial, UserDefined, and Terminal states for simple diagram', () => {
     const sm = new MermaidParser().parse(SIMPLE);
     const ids = sm.getStateIds();
-    expect(ids.some(id => sm.getState(id)?.type === SMStateType.Initial)).toBe(true);
-    expect(ids.some(id => sm.getState(id)?.type === SMStateType.Terminal)).toBe(true);
+    expect(ids.some(id => sm.getState(id)?.type === StateType.Initial)).toBe(true);
+    expect(ids.some(id => sm.getState(id)?.type === StateType.Terminal)).toBe(true);
     expect(ids.some(id => String(id) === 'init')).toBe(true);
     expect(ids.some(id => String(id) === 'execute')).toBe(true);
   });
@@ -91,7 +91,7 @@ describe('MermaidParser', () => {
 
   it('creates a Choice state for <<choice>> declaration', () => {
     const sm = new MermaidParser().parse(CHOICE);
-    const choiceId = sm.getStateIds().find(id => sm.getState(id)?.type === SMStateType.Choice);
+    const choiceId = sm.getStateIds().find(id => sm.getState(id)?.type === StateType.Choice);
     expect(choiceId).toBeDefined();
     expect(String(choiceId)).toBe('loadConfigChoice');
   });
@@ -100,7 +100,7 @@ describe('MermaidParser', () => {
     const sm = new MermaidParser().parse(CHOICE);
     const allIds = sm.getTransitionIds();
     const okT = allIds.map(id => sm.getTransition(id)).find(
-      t => t?.status === SMStatus.Ok
+      t => t?.status === StateStatus.Ok
     );
     expect(okT).toBeDefined();
     expect(String(okT!.toStateId)).toBe('execute');
@@ -113,20 +113,20 @@ describe('MermaidParser', () => {
       t => t?.exitCode === 'planA'
     );
     expect(planA).toBeDefined();
-    expect(planA!.status).toBe(SMStatus.Ok);
+    expect(planA!.status).toBe(StateStatus.Ok);
     expect(String(planA!.toStateId)).toBe('s2');
   });
 
   it('creates Fork and Join states', () => {
     const sm = new MermaidParser().parse(FORK_JOIN);
     const ids = sm.getStateIds();
-    expect(ids.some(id => sm.getState(id)?.type === SMStateType.Fork)).toBe(true);
-    expect(ids.some(id => sm.getState(id)?.type === SMStateType.Join)).toBe(true);
+    expect(ids.some(id => sm.getState(id)?.type === StateType.Fork)).toBe(true);
+    expect(ids.some(id => sm.getState(id)?.type === StateType.Join)).toBe(true);
   });
 
   it('creates a Group state and registers its members', () => {
     const sm = new MermaidParser().parse(GROUP);
-    const groupId = sm.getStateIds().find(id => sm.getState(id)?.type === SMStateType.Group);
+    const groupId = sm.getStateIds().find(id => sm.getState(id)?.type === StateType.Group);
     expect(groupId).toBeDefined();
     expect(String(groupId)).toBe('group');
   });

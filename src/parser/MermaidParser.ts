@@ -1,17 +1,17 @@
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../types';
+import type { StateMachineId, StateId, TransitionId } from '../types';
 import type { IGroupState } from '@src/IGroupState';
-import { SMStatus } from '../types';
-import type { ISMStateMachine } from '@src/ISMStateMachine';
+import { StateStatus } from "@src/IState";
+import type { IStateMachine } from '@src/IStateMachine';
 import { SMValidationException } from '../exceptions';
-import { StateMachine } from '../StateMachine';
+import { BasicStateMachine } from '../BasicStateMachine';
 import { extractTitle, tokenize } from './tokenizer';
 
-const STATUS_MAP: Record<string, SMStatus> = {
-  ok:        SMStatus.Ok,
-  error:     SMStatus.Error,
-  canceled:  SMStatus.Canceled,
-  exception: SMStatus.Exception,
-  any:       SMStatus.AnyStatus,
+const STATUS_MAP: Record<string, StateStatus> = {
+  ok:        StateStatus.Ok,
+  error:     StateStatus.Error,
+  canceled:  StateStatus.Canceled,
+  exception: StateStatus.Exception,
+  any:       StateStatus.AnyStatus,
 };
 
 let _counter = 0;
@@ -20,10 +20,10 @@ function nextId(prefix: string): string {
 }
 
 export class MermaidParser {
-  parse(diagramText: string): ISMStateMachine {
+  parse(diagramText: string): IStateMachine {
     const title  = extractTitle(diagramText) || nextId('diagram');
     const tokens = tokenize(diagramText);
-    const sm     = new StateMachine(title as SMStateMachineId);
+    const sm     = new BasicStateMachine(title as StateMachineId);
 
     const declared  = new Map<string, 'choice' | 'fork' | 'join'>();
     const groupStack: string[] = [];
@@ -63,30 +63,30 @@ export class MermaidParser {
       if (ensured.has(id)) return;
       ensured.add(id);
       const type = declared.get(id);
-      if (type === 'choice') { sm.createChoice(id as SMStateId); return; }
-      if (type === 'fork')   { sm.createFork(id as SMStateId);   return; }
-      if (type === 'join')   { sm.createJoin(id as SMStateId);   return; }
+      if (type === 'choice') { sm.createChoice(id as StateId); return; }
+      if (type === 'fork')   { sm.createFork(id as StateId);   return; }
+      if (type === 'join')   { sm.createJoin(id as StateId);   return; }
       if (groupMembers.has(id)) {
-        sm.createGroup(id as SMStateId);
+        sm.createGroup(id as StateId);
         for (const memberId of groupMembers.get(id)!) {
           ensureState(memberId);
-          const gs = sm.getState(id as SMStateId);
-          const ms = sm.getState(memberId as SMStateId);
+          const gs = sm.getState(id as StateId);
+          const ms = sm.getState(memberId as StateId);
           if (gs && ms) (gs as IGroupState).addMember(ms);
         }
         return;
       }
-      sm.createState(id as SMStateId);
+      sm.createState(id as StateId);
     };
 
     const ensureInitial = (context: string | null): string => {
       const key = context ?? '__root__';
       if (initIds.has(key)) return initIds.get(key)!;
       const id = nextId(context ? `${context}_init` : 'init');
-      sm.createInitial(id as SMStateId);
+      sm.createInitial(id as StateId);
       if (context) {
-        const gs = sm.getState(context as SMStateId) as IGroupState;
-        const is = sm.getState(id as SMStateId)!;
+        const gs = sm.getState(context as StateId) as IGroupState;
+        const is = sm.getState(id as StateId)!;
         gs?.addMember(is);
       }
       initIds.set(key, id);
@@ -97,10 +97,10 @@ export class MermaidParser {
       const key = context ?? '__root__';
       if (termIds.has(key)) return termIds.get(key)!;
       const id = nextId(context ? `${context}_term` : 'term');
-      sm.createTerminal(id as SMStateId);
+      sm.createTerminal(id as StateId);
       if (context) {
-        const gs = sm.getState(context as SMStateId) as IGroupState;
-        const ts = sm.getState(id as SMStateId)!;
+        const gs = sm.getState(context as StateId) as IGroupState;
+        const ts = sm.getState(id as StateId)!;
         gs?.addMember(ts);
       }
       termIds.set(key, id);
@@ -137,7 +137,7 @@ export class MermaidParser {
       if (tok.from !== '[*]') ensureState(tok.from);
       if (tok.to   !== '[*]') ensureState(tok.to);
 
-      let status: SMStatus | undefined;
+      let status: StateStatus | undefined;
       let exitCode: string | undefined;
 
       if (tok.label) {
@@ -155,8 +155,8 @@ export class MermaidParser {
         exitCode = parts[1]?.trim() || undefined;
       }
 
-      const tId = nextId('t') as SMTransitionId;
-      sm.createTransition(tId, fromId as SMStateId, toId as SMStateId, status, exitCode);
+      const tId = nextId('t') as TransitionId;
+      sm.createTransition(tId, fromId as StateId, toId as StateId, status, exitCode);
     }
 
     return sm;

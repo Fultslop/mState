@@ -1,7 +1,7 @@
-import { SMStateType, SMStatus } from './types';
-import type { SMStateId } from './types';
-import type { ISMTransition } from './ISMTransition';
-import type { ISMState } from './ISMState';
+import { StateType, StateStatus } from "./IState";
+import type { StateId } from './types';
+import type { ITransition } from './ITransition';
+import type { IState } from './IState';
 import type { StateRegistry } from './StateRegistry';
 import type { TransitionRegistry } from './TransitionRegistry';
 import { SMValidationException } from './exceptions';
@@ -13,9 +13,9 @@ export class Validator {
     const allTransitions = transitions.all();
 
     // Only top-level states (not inside any group)
-    const groupMemberIds = new Set<SMStateId>();
+    const groupMemberIds = new Set<StateId>();
     for (const s of allStates) {
-      if (s.type === SMStateType.Group) {
+      if (s.type === StateType.Group) {
         const g = s as GroupState;
         for (const id of g.memberIds) groupMemberIds.add(id);
       }
@@ -23,7 +23,7 @@ export class Validator {
     const topLevel = allStates.filter(s => !groupMemberIds.has(s.id));
 
     // Rule 1: exactly one top-level Initial
-    const initials = topLevel.filter(s => s.type === SMStateType.Initial);
+    const initials = topLevel.filter(s => s.type === StateType.Initial);
     if (initials.length !== 1) {
       throw new SMValidationException(
         `Rule 1: expected exactly 1 top-level Initial state, found ${initials.length}`
@@ -42,7 +42,7 @@ export class Validator {
 
     // Rule 16: AnyStatus cannot be combined with exitCode
     for (const t of allTransitions) {
-      if (t.status === SMStatus.AnyStatus && t.exitCode !== undefined) {
+      if (t.status === StateStatus.AnyStatus && t.exitCode !== undefined) {
         throw new SMValidationException(
           `Rule 16: transition '${t.id}' uses AnyStatus with exitCode '${t.exitCode}' — not allowed`
         );
@@ -54,14 +54,14 @@ export class Validator {
     const reachable = this._reachable(initial.id, states, transitions);
 
     const hasTerminal = allStates.some(
-      s => s.type === SMStateType.Terminal && reachable.has(s.id)
+      s => s.type === StateType.Terminal && reachable.has(s.id)
     );
     if (!hasTerminal) {
       throw new SMValidationException('Rule 2: no Terminal state is reachable from Initial');
     }
 
     for (const s of topLevel) {
-      if (s.type === SMStateType.Initial) continue;
+      if (s.type === StateType.Initial) continue;
       if (!reachable.has(s.id)) {
         throw new SMValidationException(`Rule 3: state '${s.id}' is not reachable from Initial`);
       }
@@ -69,17 +69,17 @@ export class Validator {
 
     // Rule 7 & 8: Choice validation
     for (const s of allStates) {
-      if (s.type !== SMStateType.Choice) continue;
+      if (s.type !== StateType.Choice) continue;
       if (s.outgoing.size === 0) {
         throw new SMValidationException(`Rule 7: Choice '${s.id}' has no outgoing transitions`);
       }
       const outgoing = Array.from(s.outgoing)
         .map(id => transitions.get(id))
-        .filter((t): t is ISMTransition => t !== undefined);
+        .filter((t): t is ITransition => t !== undefined);
       const seen = new Set<string>();
       let defaultCount = 0;
       for (const t of outgoing) {
-        if (t.status === undefined || t.status === SMStatus.AnyStatus) {
+        if (t.status === undefined || t.status === StateStatus.AnyStatus) {
           if (t.exitCode === undefined) defaultCount++;
         }
         const key = `${t.status ?? ''}/${t.exitCode ?? ''}`;
@@ -97,7 +97,7 @@ export class Validator {
 
     // Rule 10: Fork branches must reach a Join before Terminal
     for (const s of allStates) {
-      if (s.type !== SMStateType.Fork) continue;
+      if (s.type !== StateType.Fork) continue;
       for (const branchTId of s.outgoing) {
         const t = transitions.get(branchTId);
         if (!t) continue;
@@ -111,12 +111,12 @@ export class Validator {
 
     // Rule 11: Join must not be directly followed by Choice
     for (const s of allStates) {
-      if (s.type !== SMStateType.Join) continue;
+      if (s.type !== StateType.Join) continue;
       for (const outId of s.outgoing) {
         const t = transitions.get(outId);
         if (!t) continue;
         const target = states.get(t.toStateId);
-        if (target?.type === SMStateType.Choice) {
+        if (target?.type === StateType.Choice) {
           throw new SMValidationException(
             `Rule 11: Join '${s.id}' is directly followed by Choice '${target.id}'`
           );
@@ -126,10 +126,10 @@ export class Validator {
 
     // Rules 13-15: Group validation
     for (const s of allStates) {
-      if (s.type !== SMStateType.Group) continue;
+      if (s.type !== StateType.Group) continue;
       const g = s as GroupState;
-      const members = Array.from(g.memberIds).map(id => states.get(id)).filter((m): m is ISMState => m !== undefined);
-      const groupInitials = members.filter(m => m.type === SMStateType.Initial);
+      const members = Array.from(g.memberIds).map(id => states.get(id)).filter((m): m is IState => m !== undefined);
+      const groupInitials = members.filter(m => m.type === StateType.Initial);
       if (groupInitials.length !== 1) {
         throw new SMValidationException(
           `Rule 13: Group '${g.id}' must have exactly 1 Internal Initial, found ${groupInitials.length}`
@@ -137,7 +137,7 @@ export class Validator {
       }
       const groupInitial = groupInitials[0]!;
       const groupReachable = this._reachableWithin(groupInitial.id, g.memberIds, states, transitions);
-      const hasGroupTerminal = members.some(m => m.type === SMStateType.Terminal && groupReachable.has(m.id));
+      const hasGroupTerminal = members.some(m => m.type === StateType.Terminal && groupReachable.has(m.id));
       if (!hasGroupTerminal) {
         throw new SMValidationException(`Rule 14: Group '${g.id}' has no reachable Terminal from its internal Initial`);
       }
@@ -160,11 +160,11 @@ export class Validator {
   }
 
   private _reachable(
-    startId: SMStateId,
+    startId: StateId,
     states: StateRegistry,
     transitions: TransitionRegistry,
-  ): Set<SMStateId> {
-    const visited = new Set<SMStateId>();
+  ): Set<StateId> {
+    const visited = new Set<StateId>();
     const queue   = [startId];
     while (queue.length > 0) {
       const id = queue.shift()!;
@@ -181,12 +181,12 @@ export class Validator {
   }
 
   private _reachableWithin(
-    startId: SMStateId,
-    allowed: Set<SMStateId>,
+    startId: StateId,
+    allowed: Set<StateId>,
     states: StateRegistry,
     transitions: TransitionRegistry,
-  ): Set<SMStateId> {
-    const visited = new Set<SMStateId>();
+  ): Set<StateId> {
+    const visited = new Set<StateId>();
     const queue   = [startId];
     while (queue.length > 0) {
       const id = queue.shift()!;
@@ -203,11 +203,11 @@ export class Validator {
   }
 
   private _reachesJoinBeforeTerminal(
-    startId: SMStateId,
+    startId: StateId,
     states: StateRegistry,
     transitions: TransitionRegistry,
   ): boolean {
-    const visited = new Set<SMStateId>();
+    const visited = new Set<StateId>();
     const queue   = [startId];
     while (queue.length > 0) {
       const id = queue.shift()!;
@@ -215,8 +215,8 @@ export class Validator {
       visited.add(id);
       const s = states.get(id);
       if (!s) continue;
-      if (s.type === SMStateType.Join) return true;
-      if (s.type === SMStateType.Terminal) return false;
+      if (s.type === StateType.Join) return true;
+      if (s.type === StateType.Terminal) return false;
       for (const tId of s.outgoing) {
         const t = transitions.get(tId);
         if (t) queue.push(t.toStateId);

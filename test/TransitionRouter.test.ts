@@ -1,23 +1,23 @@
-import { SMStatus } from '@src/types';
-import type { SMStateId, SMTransitionId } from '@src/types';
-import type { ISMTransition } from '@src/ISMTransition';
-import type { ISMState } from '@src/ISMState';
+import { StateStatus } from "@src/IState";
+import type { StateId, TransitionId } from '@src/types';
+import type { ITransition } from '@src/ITransition';
+import type { IState } from '@src/IState';
 import { StateRegistry } from '@src/StateRegistry';
 import { TransitionRegistry } from '@src/TransitionRegistry';
 import { TransitionRouter } from '@src/TransitionRouter';
 import { SMRuntimeException } from '@src/exceptions';
-import { SMTransition } from '@src/SMTransition';
+import { Transition } from '@src/Transition';
 import { TerminalState } from '@src/states/TerminalState';
 import { UserDefinedState } from '@src/states/UserDefinedState';
 import { ChoiceState } from '@src/states/ChoiceState';
 import { ForkState } from '@src/states/ForkState';
 
-const sid = (s: string) => s as SMStateId;
-const tid = (s: string) => s as SMTransitionId;
+const sid = (s: string) => s as StateId;
+const tid = (s: string) => s as TransitionId;
 
 function makeRouter(
-  states: Record<string, ISMState>,
-  transitions: ISMTransition[],
+  states: Record<string, IState>,
+  transitions: ITransition[],
 ) {
   const sr = new StateRegistry();
   const tr = new TransitionRegistry();
@@ -33,47 +33,47 @@ function makeRouter(
 describe('TransitionRouter', () => {
   it('throws SMRuntimeException for unknown fromStateId', () => {
     const router = makeRouter({}, []);
-    expect(() => router.resolve(sid('x'), SMStatus.Ok))
+    expect(() => router.resolve(sid('x'), StateStatus.Ok))
       .toThrow(SMRuntimeException);
   });
 
   it('returns none when state has no outgoing transitions', () => {
     const s = new UserDefinedState(sid('a'));
     const router = makeRouter({ a: s }, []);
-    expect(router.resolve(sid('a'), SMStatus.Ok)).toEqual({ kind: 'none' });
+    expect(router.resolve(sid('a'), StateStatus.Ok)).toEqual({ kind: 'none' });
   });
 
   it('resolves an unqualified transition (matches any status)', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new SMTransition(tid('t1'), sid('a'), sid('b'));
+    const t = new Transition(tid('t1'), sid('a'), sid('b'));
     const router = makeRouter({ a, b }, [t]);
-    const result = router.resolve(sid('a'), SMStatus.Error);
+    const result = router.resolve(sid('a'), StateStatus.Error);
     expect(result).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
   });
 
   it('resolves a status-qualified transition when status matches', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new SMTransition(tid('t1'), sid('a'), sid('b'), SMStatus.Ok);
+    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
     const router = makeRouter({ a, b }, [t]);
-    expect(router.resolve(sid('a'), SMStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
+    expect(router.resolve(sid('a'), StateStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
   });
 
   it('returns noMatch when qualified transition does not match', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new SMTransition(tid('t1'), sid('a'), sid('b'), SMStatus.Ok);
+    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
     const router = makeRouter({ a, b }, [t]);
-    expect(router.resolve(sid('a'), SMStatus.Error)).toEqual({ kind: 'noMatch' });
+    expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'noMatch' });
   });
 
   it('returns terminal when target is a TerminalState', () => {
     const a = new UserDefinedState(sid('a'));
     const term = new TerminalState(sid('term'));
-    const t = new SMTransition(tid('t1'), sid('a'), sid('term'));
+    const t = new Transition(tid('t1'), sid('a'), sid('term'));
     const router = makeRouter({ a, term }, [t]);
-    expect(router.resolve(sid('a'), SMStatus.Ok))
+    expect(router.resolve(sid('a'), StateStatus.Ok))
       .toEqual({ kind: 'terminal', terminalId: sid('term') });
   });
 
@@ -82,42 +82,42 @@ describe('TransitionRouter', () => {
     const ch = new ChoiceState(sid('ch'));
     const b  = new UserDefinedState(sid('b'));
     const c  = new UserDefinedState(sid('c'));
-    const t1 = new SMTransition(tid('t1'), sid('a'), sid('ch'));
-    const t2 = new SMTransition(tid('t2'), sid('ch'), sid('b'), SMStatus.Ok);
-    const t3 = new SMTransition(tid('t3'), sid('ch'), sid('c'), SMStatus.Error);
+    const t1 = new Transition(tid('t1'), sid('a'), sid('ch'));
+    const t2 = new Transition(tid('t2'), sid('ch'), sid('b'), StateStatus.Ok);
+    const t3 = new Transition(tid('t3'), sid('ch'), sid('c'), StateStatus.Error);
     const router = makeRouter({ a, ch, b, c }, [t1, t2, t3]);
-    expect(router.resolve(sid('a'), SMStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
-    expect(router.resolve(sid('a'), SMStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t3')] });
+    expect(router.resolve(sid('a'), StateStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
+    expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t3')] });
   });
 
   it('AnyStatus transition matches any incoming status', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new SMTransition(tid('t1'), sid('a'), sid('b'), SMStatus.AnyStatus);
+    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.AnyStatus);
     const router = makeRouter({ a, b }, [t]);
-    expect(router.resolve(sid('a'), SMStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
-    expect(router.resolve(sid('a'), SMStatus.Exception)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
+    expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
+    expect(router.resolve(sid('a'), StateStatus.Exception)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
   });
 
   it('resolves status+exitCode combination', () => {
     const a  = new UserDefinedState(sid('a'));
     const b1 = new UserDefinedState(sid('b1'));
     const b2 = new UserDefinedState(sid('b2'));
-    const t1 = new SMTransition(tid('t1'), sid('a'), sid('b1'), SMStatus.Ok, 'planA');
-    const t2 = new SMTransition(tid('t2'), sid('a'), sid('b2'), SMStatus.Ok, 'planB');
+    const t1 = new Transition(tid('t1'), sid('a'), sid('b1'), StateStatus.Ok, 'planA');
+    const t2 = new Transition(tid('t2'), sid('a'), sid('b2'), StateStatus.Ok, 'planB');
     const router = makeRouter({ a, b1, b2 }, [t1, t2]);
-    expect(router.resolve(sid('a'), SMStatus.Ok, 'planA')).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
-    expect(router.resolve(sid('a'), SMStatus.Ok, 'planB')).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
+    expect(router.resolve(sid('a'), StateStatus.Ok, 'planA')).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
+    expect(router.resolve(sid('a'), StateStatus.Ok, 'planB')).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
   });
 
   it('Fork returns ALL outgoing transitions', () => {
     const fork = new ForkState(sid('fork'));
     const b    = new UserDefinedState(sid('b'));
     const c    = new UserDefinedState(sid('c'));
-    const t1   = new SMTransition(tid('t1'), sid('fork'), sid('b'));
-    const t2   = new SMTransition(tid('t2'), sid('fork'), sid('c'));
+    const t1   = new Transition(tid('t1'), sid('fork'), sid('b'));
+    const t2   = new Transition(tid('t2'), sid('fork'), sid('c'));
     const router = makeRouter({ fork, b, c }, [t1, t2]);
-    const result = router.resolve(sid('fork'), SMStatus.Ok);
+    const result = router.resolve(sid('fork'), StateStatus.Ok);
     expect(result.kind).toBe('transition');
     if (result.kind === 'transition') {
       expect(result.transitionIds).toHaveLength(2);

@@ -1,14 +1,14 @@
 // src/__integration__/003.basic_transition.test.ts
-import { StateMachine } from '../../src/StateMachine';
-import { SMStatus } from '../../src/types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../../src/types';
+import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateStatus } from "@src/IState";
+import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
-const smid = (s: string) => s as SMStateMachineId;
-const sid  = (s: string) => s as SMStateId;
-const tid  = (s: string) => s as SMTransitionId;
+const smid = (s: string) => s as StateMachineId;
+const sid  = (s: string) => s as StateId;
+const tid  = (s: string) => s as TransitionId;
 
 function build() {
-  const sm   = new StateMachine(smid('basicTransition'));
+  const sm   = new BasicStateMachine(smid('basicTransition'));
   const init = sm.createInitial(sid('initial'));
   const s1   = sm.createState(sid('init'));
   const s2   = sm.createState(sid('execute'));
@@ -32,8 +32,8 @@ describe('spec 003 — basic transition', () => {
     sm.onSMStopped.add(e     => events.push(`SMStopped:${e.stateStatus}`));
 
     sm.start();
-    sm.onStopped(sid('init'), SMStatus.Ok);
-    sm.onStopped(sid('execute'), SMStatus.Ok);
+    sm.onStopped(sid('init'), StateStatus.Ok);
+    sm.onStopped(sid('execute'), StateStatus.Ok);
 
     expect(events).toEqual([
       'SMStarted', 'Start:init',
@@ -50,7 +50,7 @@ describe('spec 003 — basic transition', () => {
       const evt = Array.isArray(e) ? e[0]! : e;
       started.push(String(evt.toStateId));
     });
-    sm.onStopped(sid('init'), SMStatus.Error);
+    sm.onStopped(sid('init'), StateStatus.Error);
     expect(started).toContain('execute');
   });
 });

@@ -1,15 +1,15 @@
 // src/__integration__/002.basic_state.test.ts
-import { StateMachine } from '../../src/StateMachine';
-import { SMStatus } from '../../src/types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../../src/types';
+import { BasicStateMachine } from '../../src/BasicStateMachine';
+import { StateStatus } from "@src/IState";
+import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 
-const smid = (s: string) => s as SMStateMachineId;
-const sid  = (s: string) => s as SMStateId;
-const tid  = (s: string) => s as SMTransitionId;
+const smid = (s: string) => s as StateMachineId;
+const sid  = (s: string) => s as StateId;
+const tid  = (s: string) => s as TransitionId;
 
 describe('spec 002 — basic single state', () => {
   function buildSM() {
-    const sm   = new StateMachine(smid('basicExample'));
+    const sm   = new BasicStateMachine(smid('basicExample'));
     const init = sm.createInitial(sid('initial'));
     const s1   = sm.createState(sid('initialize'));
     const term = sm.createTerminal(sid('terminal'));
@@ -36,7 +36,7 @@ describe('spec 002 — basic single state', () => {
       'onStateStart:initial->initialize',
     ]);
 
-    sm.onStopped(sid('initialize'), SMStatus.Ok);
+    sm.onStopped(sid('initialize'), StateStatus.Ok);
     expect(events).toEqual([
       'onSMStarted:basicExample',
       'onStateStart:initial->initialize',
@@ -52,15 +52,15 @@ describe('spec 002 — basic single state', () => {
   it('initialize state is Active after start()', () => {
     const sm = buildSM();
     sm.start();
-    expect(sm.getState(sid('initialize'))?.stateStatus).toBe(SMStatus.Active);
+    expect(sm.getState(sid('initialize'))?.stateStatus).toBe(StateStatus.Active);
   });
 
   it('machine exits with Ok status matching the state completion', () => {
     const sm = buildSM();
-    const stopped: SMStatus[] = [];
+    const stopped: StateStatus[] = [];
     sm.onSMStopped.add(e => stopped.push(e.stateStatus));
     sm.start();
-    sm.onStopped(sid('initialize'), SMStatus.Ok);
-    expect(stopped[0]).toBe(SMStatus.Ok);
+    sm.onStopped(sid('initialize'), StateStatus.Ok);
+    expect(stopped[0]).toBe(StateStatus.Ok);
   });
 });

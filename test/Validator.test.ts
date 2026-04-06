@@ -1,10 +1,10 @@
-import { SMStatus } from '@src/types';
-import type { SMStateId, SMTransitionId } from '@src/types';
+import { StateStatus } from "@src/IState";
+import type { StateId, TransitionId } from '@src/types';
 import { StateRegistry } from '@src/StateRegistry';
 import { TransitionRegistry } from '@src/TransitionRegistry';
 import { Validator } from '@src/Validator';
 import { SMValidationException } from '@src/exceptions';
-import { SMTransition } from '@src/SMTransition';
+import { Transition } from '@src/Transition';
 import { InitialState } from '@src/states/InitialState';
 import { TerminalState } from '@src/states/TerminalState';
 import { UserDefinedState } from '@src/states/UserDefinedState';
@@ -12,8 +12,8 @@ import { ChoiceState } from '@src/states/ChoiceState';
 import { ForkState } from '@src/states/ForkState';
 import { JoinState } from '@src/states/JoinState';
 
-const sid = (s: string) => s as SMStateId;
-const tid = (s: string) => s as SMTransitionId;
+const sid = (s: string) => s as StateId;
+const tid = (s: string) => s as TransitionId;
 
 function makeVaidSM() {
   const sr = new StateRegistry();
@@ -25,8 +25,8 @@ function makeVaidSM() {
 
   sr.add(init); sr.add(s1); sr.add(term);
 
-  const t0 = new SMTransition(tid('t0'), sid('init'), sid('s1'));
-  const t1 = new SMTransition(tid('t1'), sid('s1'), sid('term'));
+  const t0 = new Transition(tid('t0'), sid('init'), sid('s1'));
+  const t1 = new Transition(tid('t1'), sid('s1'), sid('term'));
   tr.add(t0); tr.add(t1);
   init.outgoing.add(tid('t0')); s1.incoming.add(tid('t0'));
   s1.outgoing.add(tid('t1')); term.incoming.add(tid('t1'));
@@ -70,7 +70,7 @@ describe('Validator', () => {
     const tr = new TransitionRegistry();
     sr.add(new InitialState(sid('init')));
     sr.add(new TerminalState(sid('term')));
-    const t = new SMTransition(tid('t0'), sid('init'), sid('ghost'));
+    const t = new Transition(tid('t0'), sid('init'), sid('ghost'));
     tr.add(t);
     sr.get(sid('init'))!.outgoing.add(tid('t0'));
     expect(() => new Validator().validate(sr, tr)).toThrow(SMValidationException);
@@ -82,7 +82,7 @@ describe('Validator', () => {
     const ch = new ChoiceState(sid('ch'));
     sr.add(ch);
     // Add transition to choice but none from it
-    const t = new SMTransition(tid('t_ch'), sid('s1'), sid('ch'));
+    const t = new Transition(tid('t_ch'), sid('s1'), sid('ch'));
     tr.add(t);
     sr.get(sid('s1'))!.outgoing.delete(tid('t1')); // remove old outgoing
     sr.get(sid('s1'))!.outgoing.add(tid('t_ch'));
@@ -101,11 +101,11 @@ describe('Validator', () => {
     const term = new TerminalState(sid('term'));
     sr.add(init); sr.add(ch); sr.add(b); sr.add(c); sr.add(term);
 
-    const t0 = new SMTransition(tid('t0'), sid('init'), sid('ch'));
-    const t1 = new SMTransition(tid('t1'), sid('ch'), sid('b'), SMStatus.Ok);
-    const t2 = new SMTransition(tid('t2'), sid('ch'), sid('c'), SMStatus.Ok); // dup!
-    const t3 = new SMTransition(tid('t3'), sid('b'), sid('term'));
-    const t4 = new SMTransition(tid('t4'), sid('c'), sid('term'));
+    const t0 = new Transition(tid('t0'), sid('init'), sid('ch'));
+    const t1 = new Transition(tid('t1'), sid('ch'), sid('b'), StateStatus.Ok);
+    const t2 = new Transition(tid('t2'), sid('ch'), sid('c'), StateStatus.Ok); // dup!
+    const t3 = new Transition(tid('t3'), sid('b'), sid('term'));
+    const t4 = new Transition(tid('t4'), sid('c'), sid('term'));
     for (const t of [t0, t1, t2, t3, t4]) tr.add(t);
     init.outgoing.add(tid('t0')); ch.incoming.add(tid('t0'));
     ch.outgoing.add(tid('t1')); b.incoming.add(tid('t1'));
@@ -130,13 +130,13 @@ describe('Validator', () => {
     sr.add(init); sr.add(fork); sr.add(a); sr.add(b); sr.add(join); sr.add(out); sr.add(term);
 
     const transitions = [
-      new SMTransition(tid('t0'), sid('init'), sid('fork')),
-      new SMTransition(tid('t1'), sid('fork'), sid('a')),
-      new SMTransition(tid('t2'), sid('fork'), sid('b')),
-      new SMTransition(tid('t3'), sid('a'), sid('join')),
-      new SMTransition(tid('t4'), sid('b'), sid('term')), // violation: goes to terminal, not join
-      new SMTransition(tid('t5'), sid('join'), sid('out')),
-      new SMTransition(tid('t6'), sid('out'), sid('term')),
+      new Transition(tid('t0'), sid('init'), sid('fork')),
+      new Transition(tid('t1'), sid('fork'), sid('a')),
+      new Transition(tid('t2'), sid('fork'), sid('b')),
+      new Transition(tid('t3'), sid('a'), sid('join')),
+      new Transition(tid('t4'), sid('b'), sid('term')), // violation: goes to terminal, not join
+      new Transition(tid('t5'), sid('join'), sid('out')),
+      new Transition(tid('t6'), sid('out'), sid('term')),
     ];
     for (const t of transitions) {
       tr.add(t);
@@ -154,7 +154,7 @@ describe('Validator', () => {
     // add a bad transition
     const extra = new UserDefinedState(sid('extra'));
     sr.add(extra);
-    const badT = new SMTransition(tid('bad'), sid('s1'), sid('extra'), SMStatus.AnyStatus, 'code');
+    const badT = new Transition(tid('bad'), sid('s1'), sid('extra'), StateStatus.AnyStatus, 'code');
     tr.add(badT);
     sr.get(sid('s1'))!.outgoing.add(tid('bad'));
     extra.incoming.add(tid('bad'));

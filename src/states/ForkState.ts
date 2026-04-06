@@ -1,11 +1,11 @@
-import type { SMStateId} from '../types';
-import { SMStateType } from '../types';
+import type { StateId} from '../types';
+import { StateType } from "@src/IState";
 import { BaseState } from './BaseState';
 
 export class ForkState extends BaseState {
   readonly clonePayload: ((p: unknown) => unknown) | undefined;
-  constructor(id: SMStateId, clonePayload?: (p: unknown) => unknown) {
-    super(id, SMStateType.Fork);
+  constructor(id: StateId, clonePayload?: (p: unknown) => unknown) {
+    super(id, StateType.Fork);
     this.clonePayload = clonePayload;
   }
 }

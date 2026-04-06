@@ -1,9 +1,9 @@
-import type { SMStateId} from '../types';
-import { SMStateType } from '../types';
+import type { StateId} from '../types';
+import { StateType } from "@src/IState";
 import { BaseState } from './BaseState';
 
 export class UserDefinedState extends BaseState {
-  constructor(id: SMStateId, config?: Record<string, unknown>) {
-    super(id, SMStateType.UserDefined, config);
+  constructor(id: StateId, config?: Record<string, unknown>) {
+    super(id, StateType.UserDefined, config);
   }
 }

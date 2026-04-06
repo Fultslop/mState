@@ -1,7 +1,7 @@
-import type { SMStateId} from '../types';
-import { SMStateType } from '../types';
+import type { StateId} from '../types';
+import { StateType } from "@src/IState";
 import { BaseState } from './BaseState';
 
 export class TerminalState extends BaseState {
-  constructor(id: SMStateId) { super(id, SMStateType.Terminal); }
+  constructor(id: StateId) { super(id, StateType.Terminal); }
 }
