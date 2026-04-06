@@ -10,6 +10,7 @@ import { SMRuntimeException } from './SMRuntimeException';
 export class GroupEntryHandler implements StateEntryHandler {
   readonly handledType = StateType.Group;
 
+  // eslint-disable-next-line class-methods-use-this
   onEnter(
     ctx: ExecutionContext,
     fromId: StateId,

@@ -1,4 +1,4 @@
-import { SMRuntimeException } from "./SMRuntimeException";
+import { SMRuntimeException } from './SMRuntimeException';
 import type { State, StateStatus } from '../model/State';
 import type { StateMachine } from '../model/StateMachine';
 import { ChoiceState } from './ChoiceState';
@@ -9,11 +9,11 @@ import { BasicJoinState } from './BasicJoinState';
 import { TerminalState } from './TerminalState';
 import { UserDefinedState } from './UserDefinedState';
 import { BasicTransition } from './BasicTransition';
-import { ParallelState } from './ParallelState';
 import type { StateId, TransitionId } from '../model/types';
 import type { Transition } from '../model/Transition';
 import type { JoinState } from '../model/JoinState';
 import type { GroupState } from '../model/GroupState';
+import { ParallelState } from './ParallelState';
 
 
 export class StateMachineBuilder {
@@ -23,52 +23,77 @@ export class StateMachineBuilder {
     return this._stateMachine;
   }
 
-  createInitial(id: StateId, payload?: unknown, parent?: StateId): State {
-    const s = new InitialState(id, payload, parent);
-    this._stateMachine.addState(s);
-    return s;
+  createInitial(
+    id: StateId,
+    payload?: unknown,
+    parent?: StateId,
+  ): State {
+    const state = new InitialState(id, payload, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
-  createState(id: StateId, config?: Record<string, unknown>, parent?: StateId): State {
-    const s = new UserDefinedState(id, config, parent);
-    this._stateMachine.addState(s);
-    return s;
+  createState(
+    id: StateId,
+    config?: Record<string, unknown>,
+    parent?: StateId,
+  ): State {
+    const state = new UserDefinedState(id, config, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
   createTerminal(id: StateId, parent?: StateId): State {
-    const s = new TerminalState(id, parent);
-    this._stateMachine.addState(s);
-    return s;
+    const state = new TerminalState(id, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
   createChoice(id: StateId, parent?: StateId): State {
-    const s = new ChoiceState(id, parent);
-    this._stateMachine.addState(s);
-    return s;
+    const state = new ChoiceState(id, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
-  createFork(id: StateId, clonePayload?: (p: unknown) => unknown, parent?: StateId): State {
-    const s = new ForkState(id, clonePayload, parent);
-    this._stateMachine.addState(s);
-    return s;
+  createFork(
+    id: StateId,
+    clonePayload?: (p: unknown) => unknown,
+    parent?: StateId,
+  ): State {
+    const state = new ForkState(id, clonePayload, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
   createJoin(id: StateId, parent?: StateId): JoinState {
-    const s = new BasicJoinState(id, parent);
-    this._stateMachine.addState(s);
-    return s;
+    const state = new BasicJoinState(id, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
-  createGroup(id: StateId, config?: Record<string, unknown>, parent?: StateId): GroupState {
-    const s = new BasicGroupState(id, config, parent);
-    this._stateMachine.addState(s);
-    return s;
+  createGroup(
+    id: StateId,
+    config?: Record<string, unknown>,
+    parent?: StateId,
+  ): GroupState {
+    const state = new BasicGroupState(id, config, parent);
+    this._stateMachine.addState(state);
+    return state;
   }
 
-  createParallel(id: StateId, payloadClone?: (p: unknown) => unknown, parent?: StateId): ParallelState {
-    const s = new ParallelState(id, (state) => this._stateMachine.addState(state), payloadClone, parent);
-    this._stateMachine.addState(s);
-    return s;
+  createParallel(
+    id: StateId,
+    payloadClone?: (p: unknown) => unknown,
+    parent?: StateId,
+  ): ParallelState {
+    const state = new ParallelState(
+      id,
+      (newState) => this._stateMachine.addState(newState),
+      payloadClone,
+      parent,
+    );
+    this._stateMachine.addState(state);
+    return state;
   }
 
   createTransition(
@@ -77,24 +102,31 @@ export class StateMachineBuilder {
     toId: StateId,
     status?: StateStatus,
     exitCode?: string,
-    parent?: StateId
+    parent?: StateId,
   ): Transition {
-    const t = new BasicTransition(id, fromId, toId, status, exitCode, parent);
-    this._stateMachine.addTransition(t);
+    const transition = new BasicTransition(
+      id,
+      fromId,
+      toId,
+      status,
+      exitCode,
+      parent,
+    );
+    this._stateMachine.addTransition(transition);
     const from = this._stateMachine.getState(fromId);
-    
+
     if (!from) {
-throw new SMRuntimeException(`fromId '${fromId}' not found`);
-}
-    
+      throw new SMRuntimeException(`fromId '${fromId}' not found`);
+    }
+
     const to = this._stateMachine.getState(toId);
     if (!to) {
-throw new SMRuntimeException(`toId '${toId}' not found`);
-}
+      throw new SMRuntimeException(`toId '${toId}' not found`);
+    }
 
     from.outgoing.add(id);
     to.incoming.add(id);
-    
-    return t;
+
+    return transition;
   }
 }

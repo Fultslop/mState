@@ -10,6 +10,7 @@ import type { InitialState } from './InitialState';
 export class ParallelEntryHandler implements StateEntryHandler {
   readonly handledType = StateType.Parallel;
 
+  // eslint-disable-next-line class-methods-use-this
   onEnter(
     ctx: ExecutionContext,
     fromId: StateId,
@@ -33,7 +34,8 @@ export class ParallelEntryHandler implements StateEntryHandler {
       );
       if (!initId) {
         throw new SMRuntimeException(
-          `Region '${region.id}' in parallel '${parallel.id}' has no Initial state`,
+          `Region '${region.id}' in parallel '${parallel.id}' ` +
+            'has no Initial state',
         );
       }
 

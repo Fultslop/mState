@@ -7,6 +7,7 @@ import type { StateEntryHandler } from './StateEntryHandler';
 export class ForkEntryHandler implements StateEntryHandler {
   readonly handledType = StateType.Fork;
 
+  // eslint-disable-next-line class-methods-use-this
   onEnter(
     ctx: ExecutionContext,
     _fromId: StateId,

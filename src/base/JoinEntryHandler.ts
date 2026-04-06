@@ -8,6 +8,7 @@ import type { JoinState } from '../model/JoinState';
 export class JoinEntryHandler implements StateEntryHandler {
   readonly handledType = StateType.Join;
 
+  // eslint-disable-next-line class-methods-use-this
   onEnter(
     ctx: ExecutionContext,
     fromId: StateId,

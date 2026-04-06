@@ -108,6 +108,14 @@ export default [
           {
             "selector": "ReturnStatement[argument=null]",
             "message": "Early returns (naked returns) are disallowed. Ensure the function logic flows to the end."
+          },
+          {
+            "selector": "BinaryExpression[operator='==='] > Literal[value=/./]",
+            "message": "Don't compare against raw strings. Use a constant or Type."
+          },
+          {
+            "selector": "BinaryExpression[operator='!=='] > Literal[value=/./]",
+            "message": "Don't compare against raw strings. Use a constant or Type."
           }
         ]
       }

@@ -10,12 +10,12 @@ import type { GroupState } from '../model/GroupState';
 import type { ParallelState } from './ParallelState';
 import type { Region } from './Region';
 
-// ── BFS helpers ───────────────────────────────────────────────────────────────
+// ── BFS helpers ──────────────────────────────────────────────────────────────
 
 function bfsReachable(
   startId: StateId,
-  states: StateRegistry,
-  transitions: TransitionRegistry,
+  stateReg: StateRegistry,
+  transReg: TransitionRegistry,
 ): Set<StateId> {
   const visited = new Set<StateId>();
   const queue = [startId];
@@ -23,13 +23,19 @@ function bfsReachable(
     const id = queue.shift()!;
     if (!visited.has(id)) {
       visited.add(id);
-      const s = states.get(id);
-      requiresTruthy(s, `state '${id}' not found in bfsReachable`);
-      for (const tId of s.outgoing) {
-        const t = transitions.get(tId);
-        if (t && !visited.has(t.toStateId)) {
-queue.push(t.toStateId);
-}
+      const state = stateReg.get(id);
+      requiresTruthy(
+        state,
+        `state '${id}' not found in bfsReachable`,
+      );
+      for (const transId of state.outgoing) {
+        const transition = transReg.get(transId);
+        if (
+          transition &&
+          !visited.has(transition.toStateId)
+        ) {
+          queue.push(transition.toStateId);
+        }
       }
     }
   }
@@ -39,8 +45,8 @@ queue.push(t.toStateId);
 function bfsReachableWithin(
   startId: StateId,
   allowed: Set<StateId>,
-  states: StateRegistry,
-  transitions: TransitionRegistry,
+  stateReg: StateRegistry,
+  transReg: TransitionRegistry,
 ): Set<StateId> {
   const visited = new Set<StateId>();
   const queue = [startId];
@@ -48,13 +54,19 @@ function bfsReachableWithin(
     const id = queue.shift()!;
     if (!visited.has(id) && allowed.has(id)) {
       visited.add(id);
-      const s = states.get(id);
-      requiresTruthy(s, `state '${id}' not found in bfsReachableWithin`);
-      for (const tId of s.outgoing) {
-        const t = transitions.get(tId);
-        if (t && !visited.has(t.toStateId)) {
-queue.push(t.toStateId);
-}
+      const state = stateReg.get(id);
+      requiresTruthy(
+        state,
+        `state '${id}' not found in bfsReachableWithin`,
+      );
+      for (const transId of state.outgoing) {
+        const transition = transReg.get(transId);
+        if (
+          transition &&
+          !visited.has(transition.toStateId)
+        ) {
+          queue.push(transition.toStateId);
+        }
       }
     }
   }
@@ -63,8 +75,8 @@ queue.push(t.toStateId);
 
 function bfsReachesJoinBeforeTerminal(
   startId: StateId,
-  states: StateRegistry,
-  transitions: TransitionRegistry,
+  stateReg: StateRegistry,
+  transReg: TransitionRegistry,
 ): boolean {
   const visited = new Set<StateId>();
   const queue = [startId];
@@ -72,77 +84,101 @@ function bfsReachesJoinBeforeTerminal(
     const id = queue.shift()!;
     if (!visited.has(id)) {
       visited.add(id);
-      const s = states.get(id);
-      requiresTruthy(s, `state '${id}' not found in bfsReachesJoinBeforeTerminal`);
-      if (s.type === StateType.Join) {
-return true;
-}
-      if (s.type === StateType.Terminal) {
-return false;
-}
-      for (const tId of s.outgoing) {
-        const t = transitions.get(tId);
-        if (t) {
-queue.push(t.toStateId);
-}
+      const state = stateReg.get(id);
+      requiresTruthy(
+        state,
+        `state '${id}' not found in bfsReachesJoinBeforeTerminal`,
+      );
+      if (state.type === StateType.Join) {
+        return true;
+      }
+      if (state.type === StateType.Terminal) {
+        return false;
+      }
+      for (const transId of state.outgoing) {
+        const transition = transReg.get(transId);
+        if (transition) {
+          queue.push(transition.toStateId);
+        }
       }
     }
   }
   return false;
 }
 
-// ── Rule validators ───────────────────────────────────────────────────────────
+// ── Rule validators ──────────────────────────────────────────────────────────
 
 function buildTopLevel(allStates: readonly State[]): State[] {
   const groupMemberIds = new Set<StateId>();
-  for (const s of allStates) {
-    if (s.type === StateType.Group) {
-      for (const id of (s as GroupState).stateIds) {
-groupMemberIds.add(id);
-}
+  for (const iterState of allStates) {
+    if (iterState.type === StateType.Group) {
+      for (const id of (iterState as GroupState)
+        .stateIds) {
+        groupMemberIds.add(id);
+      }
     }
-    if (s.type === StateType.Parallel) {
-      const ps = s as ParallelState;
-      for (const region of ps.getRegions()) {
+    if (iterState.type === StateType.Parallel) {
+      const parallel = iterState as ParallelState;
+      for (const region of parallel.getRegions()) {
         for (const id of region.stateIds) {
-groupMemberIds.add(id);
-}
+          groupMemberIds.add(id);
+        }
       }
     }
   }
-  return allStates.filter((state) => !groupMemberIds.has(state.id));
+  return allStates.filter(
+    (state) => !groupMemberIds.has(state.id),
+  );
 }
 
 function validateRule1(topLevel: readonly State[]): State {
-  const initials = topLevel.filter((state) => state.type === StateType.Initial);
+  const initials = topLevel.filter(
+    (iterState) =>
+      iterState.type === StateType.Initial,
+  );
   if (initials.length !== 1) {
     throw new SMValidationException(
-      `Rule 1: expected exactly 1 top-level Initial state, found ${initials.length}`,
+      `Rule 1: expected exactly 1 top-level Initial state, ` +
+        `found ${initials.length}`,
     );
   }
   return initials[0]!;
 }
 
-function validateRule5(allTransitions: readonly Transition[], states: StateRegistry): void {
-  for (const t of allTransitions) {
-    if (!states.get(t.fromStateId)) {
+function validateRule5(
+  allTransitions: readonly Transition[],
+  states: StateRegistry,
+): void {
+  for (const transition of allTransitions) {
+    if (!states.get(transition.fromStateId)) {
       throw new SMValidationException(
-        `Rule 5: transition '${t.id}' fromStateId '${t.fromStateId}' not found`,
+        `Rule 5: transition '${transition.id}' ` +
+          `fromStateId '${transition.fromStateId}' ` +
+          'not found',
       );
     }
-    if (!states.get(t.toStateId)) {
+    if (!states.get(transition.toStateId)) {
       throw new SMValidationException(
-        `Rule 5: transition '${t.id}' toStateId '${t.toStateId}' not found`,
+        `Rule 5: transition '${transition.id}' ` +
+          `toStateId '${transition.toStateId}' ` +
+          'not found',
       );
     }
   }
 }
 
-function validateRule16(allTransitions: readonly Transition[]): void {
-  for (const t of allTransitions) {
-    if (t.status === StateStatus.AnyStatus && t.exitCode !== undefined) {
+function validateRule16(
+  allTransitions: readonly Transition[],
+): void {
+  for (const transition of allTransitions) {
+    if (
+      transition.status === StateStatus.AnyStatus &&
+      transition.exitCode !== undefined
+    ) {
       throw new SMValidationException(
-        `Rule 16: transition '${t.id}' uses AnyStatus with exitCode '${t.exitCode}' — not allowed`,
+        `Rule 16: transition '${transition.id}' uses ` +
+          `AnyStatus with exitCode '${transition.exitCode}' ` +
+          '— not allowed',
       );
     }
   }
@@ -154,52 +190,89 @@ function validateReachability(
   states: StateRegistry,
   transitions: TransitionRegistry,
 ): void {
-  const reachable = bfsReachable(initial.id, states, transitions);
+  const reachable = bfsReachable(
+    initial.id,
+    states,
+    transitions,
+  );
 
-  if (!topLevel.some((state) => state.type === StateType.Terminal && reachable.has(state.id))) {
-    throw new SMValidationException('Rule 2: no Terminal state is reachable from Initial');
+  const terminalReachable = topLevel.some(
+    (iterState) =>
+      iterState.type === StateType.Terminal &&
+      reachable.has(iterState.id),
+  );
+  if (!terminalReachable) {
+    throw new SMValidationException(
+      'Rule 2: no Terminal state is reachable from Initial',
+    );
   }
 
-  for (const s of topLevel.filter((state) => state.type !== StateType.Initial)) {
-    if (!reachable.has(s.id)) {
-      throw new SMValidationException(`Rule 3: state '${s.id}' is not reachable from Initial`);
+  for (const iterState of topLevel.filter(
+    (state) => state.type !== StateType.Initial,
+  )) {
+    if (!reachable.has(iterState.id)) {
+      throw new SMValidationException(
+        `Rule 3: state '${iterState.id}' is not ` +
+          'reachable from Initial',
+      );
     }
   }
 }
 
-function validateChoiceTransitions(stateId: StateId, outgoing: readonly Transition[]): void {
+function validateChoiceTransitions(
+  stateId: StateId,
+  outgoing: readonly Transition[],
+): void {
   const seen = new Set<string>();
   let defaultCount = 0;
-  for (const t of outgoing) {
-    if (t.status === undefined || t.status === StateStatus.AnyStatus) {
-      if (t.exitCode === undefined) {
-defaultCount++;
-}
+  for (const transition of outgoing) {
+    if (
+      transition.status === undefined ||
+      transition.status === StateStatus.AnyStatus
+    ) {
+      if (transition.exitCode === undefined) {
+        defaultCount++;
+      }
     }
-    const key = `${t.status ?? ''}/${t.exitCode ?? ''}`;
+    const statusPart = transition.status ?? '';
+    const exitPart = transition.exitCode ?? '';
+    const key = `${statusPart}/${exitPart}`;
     if (seen.has(key)) {
       throw new SMValidationException(
-        `Rule 8: Choice '${stateId}' has duplicate outgoing transition for (${t.status}, ${t.exitCode})`,
+        `Rule 8: Choice '${stateId}' has duplicate ` +
+          `outgoing transition for (${transition.status}, ` +
+          `${transition.exitCode})`,
       );
     }
     seen.add(key);
   }
   if (defaultCount > 1) {
     throw new SMValidationException(
-      `Rule 9: Choice '${stateId}' has more than one default transition`,
+      `Rule 9: Choice '${stateId}' has more than one ` +
+        'default transition',
     );
   }
 }
 
-function validateChoices(allStates: readonly State[], transitions: TransitionRegistry): void {
-  for (const s of allStates.filter((state) => state.type === StateType.Choice)) {
-    if (s.outgoing.size === 0) {
-      throw new SMValidationException(`Rule 7: Choice '${s.id}' has no outgoing transitions`);
+function validateChoices(
+  allStates: readonly State[],
+  transitions: TransitionRegistry,
+): void {
+  for (const iterState of allStates.filter(
+    (state) => state.type === StateType.Choice,
+  )) {
+    if (iterState.outgoing.size === 0) {
+      throw new SMValidationException(
+        `Rule 7: Choice '${iterState.id}' has no ` +
+          'outgoing transitions',
+      );
     }
-    const outgoing = Array.from(s.outgoing)
+    const outgoing = Array.from(iterState.outgoing)
       .map((id) => transitions.get(id))
-      .filter((t): t is Transition => t !== undefined);
-    validateChoiceTransitions(s.id, outgoing);
+      .filter(
+        (trans): trans is Transition => trans !== undefined,
+      );
+    validateChoiceTransitions(iterState.id, outgoing);
   }
 }
 
@@ -208,13 +281,26 @@ function validateForks(
   states: StateRegistry,
   transitions: TransitionRegistry,
 ): void {
-  for (const s of allStates.filter((state) => state.type === StateType.Fork)) {
-    for (const branchTId of s.outgoing) {
-      const t = transitions.get(branchTId);
-      requiresTruthy(t, `transition '${branchTId}' not found (Rule 10)`);
-      if (!bfsReachesJoinBeforeTerminal(t.toStateId, states, transitions)) {
+  for (const iterState of allStates.filter(
+    (state) => state.type === StateType.Fork,
+  )) {
+    for (const branchTId of iterState.outgoing) {
+      const transition = transitions.get(branchTId);
+      requiresTruthy(
+        transition,
+        `transition '${branchTId}' not found (Rule 10)`,
+      );
+      if (
+        !bfsReachesJoinBeforeTerminal(
+          transition.toStateId,
+          states,
+          transitions,
+        )
+      ) {
         throw new SMValidationException(
-          `Rule 10: Fork '${s.id}' branch '${t.toStateId}' reaches Terminal without going through a Join`,
+          `Rule 10: Fork '${iterState.id}' branch ` +
+            `'${transition.toStateId}' reaches Terminal ` +
+            'without going through a Join',
         );
       }
     }
@@ -226,14 +312,20 @@ function validateJoins(
   states: StateRegistry,
   transitions: TransitionRegistry,
 ): void {
-  for (const s of allStates.filter((state) => state.type === StateType.Join)) {
-    for (const outId of s.outgoing) {
-      const t = transitions.get(outId);
-      requiresTruthy(t, `transition '${outId}' not found (Rule 11)`);
-      const target = states.get(t.toStateId);
+  for (const iterState of allStates.filter(
+    (state) => state.type === StateType.Join,
+  )) {
+    for (const outId of iterState.outgoing) {
+      const transition = transitions.get(outId);
+      requiresTruthy(
+        transition,
+        `transition '${outId}' not found (Rule 11)`,
+      );
+      const target = states.get(transition.toStateId);
       if (target?.type === StateType.Choice) {
         throw new SMValidationException(
-          `Rule 11: Join '${s.id}' is directly followed by Choice '${target.id}'`,
+          `Rule 11: Join '${iterState.id}' is directly ` +
+            `followed by Choice '${target.id}'`,
         );
       }
     }
@@ -246,50 +338,93 @@ function validateGroups(
   states: StateRegistry,
   transitions: TransitionRegistry,
 ): void {
-  for (const s of allStates.filter((state) => state.type === StateType.Group)) {
-    const g = s as GroupState;
-    const members = Array.from(g.stateIds)
+  for (const iterState of allStates.filter(
+    (state) => state.type === StateType.Group,
+  )) {
+    const group = iterState as GroupState;
+    const members = Array.from(group.stateIds)
       .map((id) => states.get(id))
-      .filter((m): m is State => m !== undefined);
-    const groupInitials = members.filter((m) => m.type === StateType.Initial);
+      .filter(
+        (member): member is State => member !== undefined,
+      );
+    const groupInitials = members.filter(
+      (member) => member.type === StateType.Initial,
+    );
     if (groupInitials.length !== 1) {
       throw new SMValidationException(
-        `Rule 13: Group '${g.id}' must have exactly 1 Internal Initial, found ${groupInitials.length}`,
+        `Rule 13: Group '${group.id}' must have exactly 1 ` +
+          `Internal Initial, found ${groupInitials.length}`,
       );
     }
-    const groupReachable = bfsReachableWithin(groupInitials[0]!.id, g.stateIds, states, transitions);
-    if (!members.some((m) => m.type === StateType.Terminal && groupReachable.has(m.id))) {
+    const groupReachable = bfsReachableWithin(
+      groupInitials[0]!.id,
+      group.stateIds,
+      states,
+      transitions,
+    );
+    const terminalReachable = members.some(
+      (member) =>
+        member.type === StateType.Terminal &&
+        groupReachable.has(member.id),
+    );
+    if (!terminalReachable) {
       throw new SMValidationException(
-        `Rule 14: Group '${g.id}' has no reachable Terminal from its internal Initial`,
+        `Rule 14: Group '${group.id}' has no reachable ` +
+          'Terminal from its internal Initial',
       );
     }
-    for (const t of allTransitions) {
-      const fromInGroup = g.hasState(t.fromStateId);
-      const toInGroup = g.hasState(t.toStateId);
-      if (fromInGroup !== toInGroup && t.fromStateId !== g.id && t.toStateId !== g.id) {
+    for (const transition of allTransitions) {
+      const fromInGroup = group.hasState(
+        transition.fromStateId,
+      );
+      const toInGroup = group.hasState(transition.toStateId);
+      if (
+        fromInGroup !== toInGroup &&
+        transition.fromStateId !== group.id &&
+        transition.toStateId !== group.id
+      ) {
         throw new SMValidationException(
-          `Rule 15: transition '${t.id}' crosses Group '${g.id}' boundary`,
+          `Rule 15: transition '${transition.id}' crosses ` +
+            `Group '${group.id}' boundary`,
         );
       }
     }
   }
 }
 
+// ── Parallel validation helpers ──────────────────────────────────────────────
+
 function validateNoCrossRegionTransitions(
   region: Region,
-  ps: ParallelState,
+  parallel: ParallelState,
   allTransitions: readonly Transition[],
 ): void {
-  for (const tId of region.transitionIds) {
-    const t = allTransitions.find((tr) => tr.id === tId);
-    if (t) {
-      const fromInRegion = region.hasState(t.fromStateId);
-      const toInRegion = region.hasState(t.toStateId);
-      if (fromInRegion && !toInRegion && t.toStateId !== region.terminal.id) {
-        for (const other of ps.getRegions()) {
-          if (other !== region && other.hasState(t.toStateId)) {
+  for (const transId of region.transitionIds) {
+    const transition = allTransitions.find(
+      (transitionRef) =>
+        transitionRef.id === transId,
+    );
+    if (transition) {
+      const fromInRegion = region.hasState(
+        transition.fromStateId,
+      );
+      const toInRegion = region.hasState(
+        transition.toStateId,
+      );
+      if (
+        fromInRegion &&
+        !toInRegion &&
+        transition.toStateId !== region.terminal.id
+      ) {
+        for (const other of parallel.getRegions()) {
+          if (
+            other !== region &&
+            other.hasState(transition.toStateId)
+          ) {
             throw new SMValidationException(
-              `P3: transition '${t.id}' crosses region boundary between '${region.id}' and '${other.id}'`,
+              `P3: transition '${transition.id}' crosses ` +
+                'region boundary between ' +
+                `'${region.id}' and '${other.id}'`,
             );
           }
         }
@@ -300,24 +435,37 @@ function validateNoCrossRegionTransitions(
 
 function validateNoOuterTerminalBypass(
   region: Region,
-  ps: ParallelState,
+  parallel: ParallelState,
   allTransitions: readonly Transition[],
   allStates: readonly State[],
   states: StateRegistry,
 ): void {
-  const outerTerminalIds = new Set(
+  const outerTerminalIds = new Set<StateId>(
     allStates
-      .filter((st) => st.type === StateType.Terminal && !ps.findRegionForState(st.id))
-      .map((st) => st.id),
+      .filter(
+        (iterState) =>
+          iterState.type === StateType.Terminal &&
+          !parallel.findRegionForState(iterState.id),
+      )
+      .map((iterState) => iterState.id),
   );
   for (const stateId of region.stateIds) {
-    const st = states.get(stateId);
-    if (st) {
-      for (const tId of st.outgoing) {
-        const t = allTransitions.find((tr) => tr.id === tId);
-        if (t && outerTerminalIds.has(t.toStateId)) {
+    const state = states.get(stateId);
+    if (state) {
+      for (const transId of state.outgoing) {
+        const transition = allTransitions.find(
+          (transitionRef) =>
+            transitionRef.id === transId,
+        );
+        if (
+          transition &&
+          outerTerminalIds.has(transition.toStateId)
+        ) {
           throw new SMValidationException(
-            `P5: state '${stateId}' in region '${region.id}' transitions directly to outer terminal '${t.toStateId}' — must go through region terminal`,
+            `P5: state '${stateId}' in region ` +
+              `'${region.id}' transitions directly to ` +
+              `outer terminal '${transition.toStateId}' ` +
+              '— must go through region terminal',
           );
         }
       }
@@ -327,69 +475,113 @@ function validateNoOuterTerminalBypass(
 
 function validateParallelRegion(
   region: Region,
-  ps: ParallelState,
+  parallel: ParallelState,
   allTransitions: readonly Transition[],
   allStates: readonly State[],
   states: StateRegistry,
 ): void {
-  // P1: region must have exactly one Initial
   const initials = Array.from(region.stateIds).filter(
     (id) => states.get(id)?.type === StateType.Initial,
   );
   if (initials.length !== 1) {
     throw new SMValidationException(
-      `P1: Region '${region.id}' in parallel '${ps.id}' must have exactly 1 Initial state, found ${initials.length}`,
+      `P1: Region '${region.id}' in parallel ` +
+        `'${parallel.id}' must have exactly 1 Initial ` +
+        `state, found ${initials.length}`,
     );
   }
 
-  // P2: region terminal must exist in the SM registry
   if (!states.get(region.terminal.id)) {
     throw new SMValidationException(
-      `P2: Region '${region.id}' in parallel '${ps.id}' is missing its terminal state`,
+      `P2: Region '${region.id}' in parallel ` +
+        `'${parallel.id}' is missing its terminal state`,
     );
   }
 
-  validateNoCrossRegionTransitions(region, ps, allTransitions);
-  validateNoOuterTerminalBypass(region, ps, allTransitions, allStates, states);
+  validateNoCrossRegionTransitions(
+    region,
+    parallel,
+    allTransitions,
+  );
+  validateNoOuterTerminalBypass(
+    region,
+    parallel,
+    allTransitions,
+    allStates,
+    states,
+  );
 }
 
 function validateParallels(
-  allStates: readonly State[],
+  allStatesList: readonly State[],
   allTransitions: readonly Transition[],
   states: StateRegistry,
 ): void {
-  for (const s of allStates.filter((state) => state.type === StateType.Parallel)) {
-    const ps = s as ParallelState;
+  for (const iterState of allStatesList.filter(
+    (state) => state.type === StateType.Parallel,
+  )) {
+    const parallel = iterState as ParallelState;
 
-    for (const region of ps.getRegions()) {
-      validateParallelRegion(region, ps, allTransitions, allStates, states);
+    for (const region of parallel.getRegions()) {
+      validateParallelRegion(
+        region,
+        parallel,
+        allTransitions,
+        allStatesList,
+        states,
+      );
     }
 
-    // P4: parallel may not be directly followed by Choice
-    for (const tId of ps.outgoing) {
-      const t = allTransitions.find((tr) => tr.id === tId);
-      if (t && states.get(t.toStateId)?.type === StateType.Choice) {
+    for (const transId of parallel.outgoing) {
+      const transition = allTransitions.find(
+        (transitionRef) =>
+          transitionRef.id === transId,
+      );
+      if (
+        transition &&
+        states.get(transition.toStateId)?.type ===
+          StateType.Choice
+      ) {
         throw new SMValidationException(
-          `P4: Parallel '${ps.id}' is directly followed by Choice '${t.toStateId}' without an intervening state`,
+          `P4: Parallel '${parallel.id}' is directly ` +
+            `followed by Choice '${transition.toStateId}' ` +
+            'without an intervening state',
         );
       }
     }
   }
 }
 
-// ── Entry point ───────────────────────────────────────────────────────────────
+// ── Entry point ──────────────────────────────────────────────────────────────
 
-export function validateStateMachine(states: StateRegistry, transitions: TransitionRegistry): void {
-  const allStates = states.all();
+export function validateStateMachine(
+  states: StateRegistry,
+  transitions: TransitionRegistry,
+): void {
+  const allStatesList = states.all();
   const allTransitions = transitions.all();
-  const topLevel = buildTopLevel(allStates);
+  const topLevel = buildTopLevel(allStatesList);
   const initial = validateRule1(topLevel);
   validateRule5(allTransitions, states);
   validateRule16(allTransitions);
-  validateReachability(initial, topLevel, states, transitions);
-  validateChoices(allStates, transitions);
-  validateForks(allStates, states, transitions);
-  validateJoins(allStates, states, transitions);
-  validateGroups(allStates, allTransitions, states, transitions);
-  validateParallels(allStates, allTransitions, states);
+  validateReachability(
+    initial,
+    topLevel,
+    states,
+    transitions,
+  );
+  validateChoices(allStatesList, transitions);
+  validateForks(allStatesList, states, transitions);
+  validateJoins(allStatesList, states, transitions);
+  validateGroups(
+    allStatesList,
+    allTransitions,
+    states,
+    transitions,
+  );
+  validateParallels(
+    allStatesList,
+    allTransitions,
+    states,
+  );
 }

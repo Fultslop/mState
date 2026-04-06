@@ -14,6 +14,7 @@ export interface DiagramConfig {
 const EMPTY: DiagramConfig = { config: undefined, initial: undefined, states: {} };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
+  /* eslint-disable-next-line no-restricted-syntax */
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -36,8 +37,8 @@ function parseBlock(block: Record<string, unknown>): DiagramConfig {
 
 export function parseConfig(smConfigYaml: string, diagramTitle: string): DiagramConfig {
   if (!smConfigYaml.trim()) {
-return EMPTY;
-}
+    return EMPTY;
+  }
 
   let parsed: unknown;
   try {
@@ -47,12 +48,12 @@ return EMPTY;
   }
 
   if (!isRecord(parsed)) {
-return EMPTY;
-}
+    return EMPTY;
+  }
   const entry = parsed[diagramTitle];
   if (!isRecord(entry)) {
-return EMPTY;
-}
+    return EMPTY;
+  }
 
   return parseBlock(entry);
 }
