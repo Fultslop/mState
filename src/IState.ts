@@ -1,3 +1,4 @@
+import { State } from 'js-yaml';
 import type { StateId, TransitionId } from './types';
 
 export enum StateStatus {
@@ -22,9 +23,11 @@ export enum StateType {
 
 export interface IState {
   readonly id: StateId;
-  readonly type: StateType;
-  stateStatus: StateStatus;
+  readonly type: StateType; 
   readonly config: Record<string, unknown> | undefined;
   readonly incoming: Set<TransitionId>;
   readonly outgoing: Set<TransitionId>;
+
+  parentId: StateId | undefined;
+  stateStatus: StateStatus;
 }

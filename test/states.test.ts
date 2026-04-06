@@ -13,10 +13,10 @@ describe('InitialState', () => {
     const s = new InitialState(id, { x: 1 });
     expect(s.type).toBe(StateType.Initial);
     expect(s.stateStatus).toBe(StateStatus.None);
-    expect(s.payload).toEqual({ x: 1 });
+    expect(s.initialPayload).toEqual({ x: 1 });
   });
   it('payload defaults to undefined', () => {
-    expect(new InitialState(id).payload).toBeUndefined();
+    expect(new InitialState(id).initialPayload).toBeUndefined();
   });
 });
 

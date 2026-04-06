@@ -39,44 +39,44 @@ export class StateMachineBuilder {
     return this._stateMachine;
   }
 
-  createInitial(id: StateId, payload?: unknown): IState {
-    const s = new InitialState(id, payload);
+  createInitial(id: StateId, payload?: unknown, parent?: StateId): IState {
+    const s = new InitialState(id, payload, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createState(id: StateId, config?: Record<string, unknown>): IState {
-    const s = new UserDefinedState(id, config);
+  createState(id: StateId, config?: Record<string, unknown>, parent?: StateId): IState {
+    const s = new UserDefinedState(id, config, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createTerminal(id: StateId): IState {
-    const s = new TerminalState(id);
+  createTerminal(id: StateId, parent?: StateId): IState {
+    const s = new TerminalState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createChoice(id: StateId): IState {
-    const s = new ChoiceState(id);
+  createChoice(id: StateId, parent?: StateId): IState {
+    const s = new ChoiceState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createFork(id: StateId, clonePayload?: (p: unknown) => unknown): IState {
-    const s = new ForkState(id, clonePayload);
+  createFork(id: StateId, clonePayload?: (p: unknown) => unknown, parent?: StateId): IState {
+    const s = new ForkState(id, clonePayload, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createJoin(id: StateId): IJoinState {
-    const s = new JoinState(id);
+  createJoin(id: StateId, parent?: StateId): IJoinState {
+    const s = new JoinState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createGroup(id: StateId, config?: Record<string, unknown>): IGroupState {
-    const s = new GroupState(id, config);
+  createGroup(id: StateId, config?: Record<string, unknown>, parent?: StateId): IGroupState {
+    const s = new GroupState(id, config, parent);
     this._stateMachine.addState(s);
     return s;
   }
@@ -87,8 +87,9 @@ export class StateMachineBuilder {
     toId: StateId,
     status?: StateStatus,
     exitCode?: string,
+    parent?: StateId
   ): ITransition {
-    const t = new Transition(id, fromId, toId, status, exitCode);
+    const t = new Transition(id, fromId, toId, status, exitCode, parent);
     this._stateMachine.addTransition(t);
     const from = this._stateMachine.getState(fromId);
     

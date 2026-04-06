@@ -83,7 +83,7 @@ export class MermaidParser {
           ensureState(memberId);
           const gs = sm.getState(id as StateId);
           const ms = sm.getState(memberId as StateId);
-          if (gs && ms) (gs as IGroupState).addMember(ms);
+          if (gs && ms) (gs as IGroupState).addState(ms);
         }
         return;
       }
@@ -98,7 +98,7 @@ export class MermaidParser {
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
         const is = sm.getState(id as StateId)!;
-        gs?.addMember(is);
+        gs?.addState(is);
       }
       initIds.set(key, id);
       return id;
@@ -112,7 +112,7 @@ export class MermaidParser {
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
         const ts = sm.getState(id as StateId)!;
-        gs?.addMember(ts);
+        gs?.addState(ts);
       }
       termIds.set(key, id);
       return id;

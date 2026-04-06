@@ -3,9 +3,9 @@ import { StateType } from '@src/IState';
 import { BaseState } from './BaseState';
 
 export class InitialState extends BaseState {
-  readonly payload: unknown;
-  constructor(id: StateId, payload?: unknown) {
-    super(id, StateType.Initial);
-    this.payload = payload;
+  readonly initialPayload: unknown;
+  constructor(id: StateId, payload?: unknown, parentId?: StateId) {
+    super(id, StateType.Initial, undefined, parentId);
+    this.initialPayload = payload;
   }
 }

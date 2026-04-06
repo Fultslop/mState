@@ -3,7 +3,7 @@ import { StateType } from '@src/IState';
 import { BaseState } from './BaseState';
 
 export class TerminalState extends BaseState {
-  constructor(id: StateId) {
-    super(id, StateType.Terminal);
+  constructor(id: StateId, parentId? : StateId) {
+    super(id, StateType.Terminal, undefined, parentId);
   }
 }

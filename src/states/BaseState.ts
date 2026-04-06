@@ -6,14 +6,18 @@ import type { IState } from '@src/IState';
 export abstract class BaseState implements IState {
   readonly id: StateId;
   readonly type: StateType;
-  stateStatus: StateStatus = StateStatus.None;
+  
   readonly config: Record<string, unknown> | undefined;
   readonly incoming: Set<TransitionId> = new Set();
   readonly outgoing: Set<TransitionId> = new Set();
 
-  constructor(id: StateId, type: StateType, config?: Record<string, unknown>) {
+  parentId: StateId | undefined;
+  stateStatus: StateStatus = StateStatus.None;
+
+  constructor(id: StateId, type: StateType, config?: Record<string, unknown>, parentId?: StateId) {
     this.id = id;
     this.type = type;
     this.config = config;
+    this.parentId = parentId;
   }
 }

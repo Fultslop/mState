@@ -22,10 +22,10 @@ function build() {
   const rootTerm  = builder.createTerminal(sid('rootTerm'));
 
   // Register group members
-  group.addMember(groupInit);
-  group.addMember(step1);
-  group.addMember(step2);
-  group.addMember(groupTerm);
+  group.addState(groupInit);
+  group.addState(step1);
+  group.addState(step2);
+  group.addState(groupTerm);
 
   // Top-level transitions
   builder.createTransition(tid('t0'), rootInit.id, group.id);

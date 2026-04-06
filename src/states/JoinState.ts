@@ -6,8 +6,8 @@ import { BaseState } from './BaseState';
 export class JoinState extends BaseState implements IJoinState {
   private readonly _received: Map<TransitionId, StateStartEvent> = new Map();
 
-  constructor(id: StateId) {
-    super(id, StateType.Join);
+  constructor(id: StateId, parentId?: StateId) {
+    super(id, StateType.Join, undefined, parentId);
   }
 
   get isComplete(): boolean {

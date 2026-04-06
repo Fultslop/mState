@@ -38,7 +38,8 @@ export interface IStateMachine {
   getTransitionIds(): ReadonlyArray<TransitionId>;
 
   addState(state: IState): void;
-  removeState(id: StateId): void;
+  deleteState(id: StateId): void;
+  
   addTransition(transition: ITransition): void;
-  removeTransition(id: TransitionId): void;
+  deleteTransition(id: TransitionId): void;
 }

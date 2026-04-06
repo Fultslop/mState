@@ -27,6 +27,7 @@ import { ChoiceState } from './states/ChoiceState';
 import { ForkState } from './states/ForkState';
 import { JoinState } from './states/JoinState';
 import { GroupState } from './states/GroupState';
+import { requiresTruthy } from './core/requires';
 
 export class BasicStateMachine implements IStateMachine {
   readonly id: StateMachineId;
@@ -51,18 +52,30 @@ export class BasicStateMachine implements IStateMachine {
   addState(state: IState): void {
     this._states.add(state);
   }
-  removeState(id: StateId): void {
+
+  deleteState(id: StateId): void {
+    let state = this.getState(id);
+
+    requiresTruthy(state, `cannot find state with id ${id}.`);
+
+    // remove it from the registry
     this._states.remove(id);
   }
+
+  
+
   getState(id: StateId): IState | undefined {
     return this._states.get(id);
   }
+
   getStateCount(): number {
     return this._states.count();
   }
+
   getStateIds(): ReadonlyArray<StateId> {
     return this._states.ids();
   }
+  
   getActiveStateIds(): ReadonlyArray<StateId> {
     return Array.from(this._active);
   }
@@ -70,15 +83,19 @@ export class BasicStateMachine implements IStateMachine {
   addTransition(t: ITransition): void {
     this._transitions.add(t);
   }
-  removeTransition(id: TransitionId): void {
+
+  deleteTransition(id: TransitionId): void {
     this._transitions.remove(id);
   }
+
   getTransition(id: TransitionId): ITransition | undefined {
     return this._transitions.get(id);
   }
+
   getTransitionCount(): number {
     return this._transitions.count();
   }
+
   getTransitionIds(): ReadonlyArray<TransitionId> {
     return this._transitions.ids();
   }
@@ -99,7 +116,7 @@ export class BasicStateMachine implements IStateMachine {
 
     for (const init of initials) {
       const initState = init as InitialState;
-      this._routeFromState(init.id, StateStatus.None, undefined, initState.payload);
+      this._routeFromState(init.id, StateStatus.None, undefined, initState.initialPayload);
     }
   }
 
@@ -259,13 +276,13 @@ export class BasicStateMachine implements IStateMachine {
   }
 
   private _startGroup(group: GroupState, payload: unknown): void {
-    const initId = Array.from(group.memberIds).find((id) => {
+    const initId = Array.from(group.stateIds).find((id) => {
       return this._states.get(id)?.type === StateType.Initial;
     });
     if (!initId) throw new SMRuntimeException(`Group '${group.id}' has no Initial member state`);
 
     const groupInit = this._states.get(initId) as InitialState;
-    const initPayload = groupInit.payload ?? payload;
+    const initPayload = groupInit.initialPayload ?? payload;
     this._routeFromState(initId, StateStatus.None, undefined, initPayload);
   }
 
@@ -273,7 +290,7 @@ export class BasicStateMachine implements IStateMachine {
     for (const s of this._states.all()) {
       if (s.type === StateType.Group) {
         const g = s as GroupState;
-        if (g.hasMember(terminalId)) return g;
+        if (g.hasState(terminalId)) return g;
       }
     }
     return undefined;

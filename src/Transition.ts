@@ -8,6 +8,8 @@ export class Transition implements ITransition {
   readonly toStateId: StateId;
   readonly status: StateStatus | undefined;
   readonly exitCode: string | undefined;
+  
+  parentId: StateId | undefined
 
   constructor(
     id: TransitionId,
@@ -15,11 +17,13 @@ export class Transition implements ITransition {
     toStateId: StateId,
     status?: StateStatus,
     exitCode?: string,
+    parentId? : StateId
   ) {
     this.id = id;
     this.fromStateId = fromStateId;
     this.toStateId = toStateId;
     this.status = status;
     this.exitCode = exitCode;
+    this.parentId = parentId;
   }
 }

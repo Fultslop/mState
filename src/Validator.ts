@@ -17,7 +17,7 @@ export class Validator {
     for (const s of allStates) {
       if (s.type === StateType.Group) {
         const g = s as GroupState;
-        for (const id of g.memberIds) groupMemberIds.add(id);
+        for (const id of g.stateIds) groupMemberIds.add(id);
       }
     }
     const topLevel = allStates.filter((s) => !groupMemberIds.has(s.id));
@@ -132,7 +132,7 @@ export class Validator {
     for (const s of allStates) {
       if (s.type !== StateType.Group) continue;
       const g = s as GroupState;
-      const members = Array.from(g.memberIds)
+      const members = Array.from(g.stateIds)
         .map((id) => states.get(id))
         .filter((m): m is IState => m !== undefined);
       const groupInitials = members.filter((m) => m.type === StateType.Initial);
@@ -144,7 +144,7 @@ export class Validator {
       const groupInitial = groupInitials[0]!;
       const groupReachable = this._reachableWithin(
         groupInitial.id,
-        g.memberIds,
+        g.stateIds,
         states,
         transitions,
       );
@@ -159,8 +159,8 @@ export class Validator {
 
       // Rule 15: no cross-boundary transitions
       for (const t of allTransitions) {
-        const fromInGroup = g.hasMember(t.fromStateId);
-        const toInGroup = g.hasMember(t.toStateId);
+        const fromInGroup = g.hasState(t.fromStateId);
+        const toInGroup = g.hasState(t.toStateId);
         if (fromInGroup !== toInGroup) {
           const fromIsGroup = t.fromStateId === g.id;
           const toIsGroup = t.toStateId === g.id;

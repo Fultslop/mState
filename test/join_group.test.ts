@@ -72,10 +72,10 @@ describe('GroupState', () => {
   it('tracks member states', () => {
     const g = new GroupState(sid('g'));
     const s = new UserDefinedState(sid('s1'));
-    g.addMember(s);
-    expect(g.hasMember(sid('s1'))).toBe(true);
-    expect(g.hasMember(sid('s2'))).toBe(false);
-    expect(g.memberIds.has(sid('s1'))).toBe(true);
+    g.addState(s);
+    expect(g.hasState(sid('s1'))).toBe(true);
+    expect(g.hasState(sid('s2'))).toBe(false);
+    expect(g.stateIds.has(sid('s1'))).toBe(true);
   });
 
   it('stores config', () => {

@@ -3,7 +3,7 @@ import { StateType } from '@src/IState';
 import { BaseState } from './BaseState';
 
 export class ChoiceState extends BaseState {
-  constructor(id: StateId) {
-    super(id, StateType.Choice);
+  constructor(id: StateId, parentId?: StateId) {
+    super(id, StateType.Choice, undefined, parentId);
   }
 }

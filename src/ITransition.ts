@@ -7,4 +7,6 @@ export interface ITransition {
   readonly toStateId: StateId;
   readonly status: StateStatus | undefined;
   readonly exitCode: string | undefined;
+
+  parentId: StateId | undefined;
 }

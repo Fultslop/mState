@@ -104,7 +104,7 @@ describe('StateMachine construction', () => {
     const builder = new StateMachineBuilder(sm);
     builder.createState(sid('a'));
     expect(sm.getStateIds()).toContain(sid('a'));
-    sm.removeState(sid('a'));
+    sm.deleteState(sid('a'));
     expect(sm.getStateIds()).not.toContain(sid('a'));
   });
 });
