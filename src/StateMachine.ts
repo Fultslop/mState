@@ -1,8 +1,9 @@
-import {
-  SMStateMachineId, SMStateId, SMTransitionId, SMStatus, SMStateType,
-  SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent,
+import type {
+  SMStateMachineId, SMStateId, SMTransitionId,
+  SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent} from './types';
+import { SMStatus, SMStateType
 } from './types';
-import { ISMState, ISMTransition, ISMStateMachine, IJoinState, IGroupState } from './interfaces';
+import type { ISMState, ISMTransition, ISMStateMachine, IJoinState, IGroupState } from './interfaces';
 import { TypedEvent } from './TypedEvent';
 import { StateRegistry } from './StateRegistry';
 import { TransitionRegistry } from './TransitionRegistry';

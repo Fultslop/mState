@@ -11,7 +11,6 @@ import { UserDefinedState } from './states/UserDefinedState';
 import { ChoiceState } from './states/ChoiceState';
 import { ForkState } from './states/ForkState';
 import { JoinState } from './states/JoinState';
-import { GroupState } from './states/GroupState';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;

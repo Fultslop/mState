@@ -1,5 +1,6 @@
-import { SMStateId, SMStateType, SMStatus, SMTransitionId } from '../types';
-import { ISMState } from '../interfaces';
+import type { SMStateId, SMStateType, SMTransitionId } from '../types';
+import { SMStatus } from '../types';
+import type { ISMState } from '../interfaces';
 
 export abstract class BaseState implements ISMState {
   readonly id: SMStateId;

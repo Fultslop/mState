@@ -2,7 +2,7 @@ import * as yaml from 'js-yaml';
 import { SMValidationException } from '../exceptions';
 
 export interface StateConfig {
-  config?: Record<string, unknown>;
+  config?: Record<string, unknown> | undefined;
 }
 
 export interface DiagramConfig {

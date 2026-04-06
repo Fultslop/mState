@@ -82,7 +82,7 @@ describe('spec 008 — fork/join', () => {
     sm.onStopped(sid('RunServiceB'), SMStatus.Ok, undefined, 'resultB');
 
     expect(startEvts[0]).toBeDefined();
-    const payload = startEvts[0]!.payload as import('../types').SMStateStartEvent[];
+    const payload = startEvts[0]!.payload as SMStateStartEvent[];
     expect(Array.isArray(payload)).toBe(true);
     expect(payload).toHaveLength(2);
   });

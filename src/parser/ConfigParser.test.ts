@@ -1,4 +1,4 @@
-import { ConfigParser, type DiagramConfig } from './ConfigParser';
+import { ConfigParser } from './ConfigParser';
 import { SMValidationException } from '../exceptions';
 
 describe('ConfigParser', () => {

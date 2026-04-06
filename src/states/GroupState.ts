@@ -1,5 +1,6 @@
-import { SMStateId, SMStateType } from '../types';
-import { IGroupState, ISMState } from '../interfaces';
+import type { SMStateId} from '../types';
+import { SMStateType } from '../types';
+import type { IGroupState, ISMState } from '../interfaces';
 import { BaseState } from './BaseState';
 
 export class GroupState extends BaseState implements IGroupState {

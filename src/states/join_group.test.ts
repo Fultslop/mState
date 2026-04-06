@@ -1,4 +1,4 @@
-import { SMStateType, SMStatus } from '../types';
+import { SMStateType } from '../types';
 import type { SMStateId, SMTransitionId } from '../types';
 import type { SMStateStartEvent } from '../types';
 import { JoinState } from './JoinState';

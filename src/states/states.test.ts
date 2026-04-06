@@ -1,11 +1,12 @@
 import { SMStateType, SMStatus } from '../types';
+import type { SMStateId } from '../types';
 import { InitialState } from './InitialState';
 import { TerminalState } from './TerminalState';
 import { UserDefinedState } from './UserDefinedState';
 import { ChoiceState } from './ChoiceState';
 import { ForkState } from './ForkState';
 
-const id = 's1' as import('../types').SMStateId;
+const id = 's1' as SMStateId;
 
 describe('InitialState', () => {
   it('has type Initial and stores payload', () => {

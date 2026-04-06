@@ -3,6 +3,7 @@
 import { StateMachine } from '../StateMachine';
 import { SMStatus, SMStateType } from '../types';
 import type { SMStateMachineId, SMStateId, SMTransitionId } from '../types';
+import { SMValidationException, SMRuntimeException } from '../exceptions';
 
 const smid = (s: string) => s as SMStateMachineId;
 const sid  = (s: string) => s as SMStateId;
@@ -55,7 +56,6 @@ describe('spec 001 — entities', () => {
   });
 
   it('SMValidationException and SMRuntimeException are distinct Error subclasses', () => {
-    const { SMValidationException, SMRuntimeException } = require('../exceptions');
     const ve = new SMValidationException('v');
     const re = new SMRuntimeException('r');
     expect(ve).toBeInstanceOf(Error);

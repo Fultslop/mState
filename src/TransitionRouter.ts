@@ -1,13 +1,13 @@
 import { SMStateType, SMStatus } from './types';
-import type { SMStateId } from './types';
-import { ISMState, ISMTransition } from './interfaces';
-import { StateRegistry } from './StateRegistry';
-import { TransitionRegistry } from './TransitionRegistry';
+import type { SMStateId, SMTransitionId } from './types';
+import type { ISMState, ISMTransition } from './interfaces';
+import type { StateRegistry } from './StateRegistry';
+import type { TransitionRegistry } from './TransitionRegistry';
 import { SMRuntimeException } from './exceptions';
 
 export type RouteResult =
-  | { kind: 'transition'; transitionIds: import('./types').SMTransitionId[] }
-  | { kind: 'terminal'; terminalId: import('./types').SMStateId }
+  | { kind: 'transition'; transitionIds: SMTransitionId[] }
+  | { kind: 'terminal'; terminalId: SMStateId }
   | { kind: 'noMatch' }
   | { kind: 'none' };
 

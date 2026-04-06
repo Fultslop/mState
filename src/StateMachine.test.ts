@@ -1,5 +1,5 @@
 import { SMStateType, SMStatus } from './types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from './types';
+import type { SMStateMachineId, SMStateId, SMTransitionId, SMStoppedEvent, SMStateStartEvent } from './types';
 import { StateMachine } from './StateMachine';
 import { SMValidationException, SMRuntimeException } from './exceptions';
 
@@ -183,7 +183,7 @@ describe('StateMachine.onStopped()', () => {
     sm.createTransition(tid('t2'), s2.id, term.id);
 
     sm.start();
-    const smStopped: import('./types').SMStoppedEvent[] = [];
+    const smStopped: SMStoppedEvent[] = [];
     sm.onSMStopped.add(e => smStopped.push(e));
     sm.onStopped(sid('s1'), SMStatus.Error); // doesn't match Ok
     expect(smStopped[0]?.stateStatus).toBe(SMStatus.Error);
@@ -209,7 +209,7 @@ describe('StateMachine.onStopped()', () => {
     sm.createTransition(tid('t3'), out.id, term.id);
 
     sm.start();
-    let forkEvents: import('./types').SMStateStartEvent[] | null = null;
+    let forkEvents: SMStateStartEvent[] | null = null;
     sm.onStateStart.add(e => {
       if (Array.isArray(e)) forkEvents = e;
     });
@@ -263,7 +263,7 @@ describe('StateMachine.stop()', () => {
     sm.start();
     expect(sm.getActiveStateIds()).toContain(sid('s1'));
 
-    const events: import('./types').SMStoppedEvent[] = [];
+    const events: SMStoppedEvent[] = [];
     sm.onSMStopped.add(e => events.push(e));
     sm.stop();
 

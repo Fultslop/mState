@@ -54,7 +54,7 @@ export function tokenize(diagramText: string): Token[] {
       const from  = trans[1]!.trim();
       const to    = trans[2]!.trim();
       const label = trans[3]?.trim();
-      tokens.push({ kind: 'transition', from, to, label: label ?? undefined });
+      tokens.push({ kind: 'transition', from, to, ...(label !== undefined ? { label } : {}) });
       continue;
     }
   }

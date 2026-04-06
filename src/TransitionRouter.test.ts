@@ -1,23 +1,22 @@
-import { SMStatus, SMStateType } from './types';
+import { SMStatus } from './types';
 import type { SMStateId, SMTransitionId } from './types';
+import type { ISMState, ISMTransition } from './interfaces';
 import { StateRegistry } from './StateRegistry';
 import { TransitionRegistry } from './TransitionRegistry';
 import { TransitionRouter } from './TransitionRouter';
 import { SMRuntimeException } from './exceptions';
 import { SMTransition } from './SMTransition';
-import { InitialState } from './states/InitialState';
 import { TerminalState } from './states/TerminalState';
 import { UserDefinedState } from './states/UserDefinedState';
 import { ChoiceState } from './states/ChoiceState';
 import { ForkState } from './states/ForkState';
-import { JoinState } from './states/JoinState';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;
 
 function makeRouter(
-  states: Record<string, import('./interfaces').ISMState>,
-  transitions: import('./interfaces').ISMTransition[],
+  states: Record<string, ISMState>,
+  transitions: ISMTransition[],
 ) {
   const sr = new StateRegistry();
   const tr = new TransitionRegistry();

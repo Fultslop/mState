@@ -1,5 +1,5 @@
-import { SMStateId } from './types';
-import { ISMState } from './interfaces';
+import type { SMStateId } from './types';
+import type { ISMState } from './interfaces';
 import { SMValidationException } from './exceptions';
 
 export class StateRegistry {

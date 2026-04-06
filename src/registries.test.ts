@@ -4,7 +4,6 @@ import { TransitionRegistry } from './TransitionRegistry';
 import { UserDefinedState } from './states/UserDefinedState';
 import { SMTransition } from './SMTransition';
 import type { SMStateId, SMTransitionId } from './types';
-import { SMStatus } from './types';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;

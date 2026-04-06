@@ -1,5 +1,5 @@
-import { TypedEvent } from './TypedEvent';
-import {
+import type { TypedEvent } from './TypedEvent';
+import type {
   SMStateMachineId, SMStateId, SMTransitionId,
   SMStatus, SMStateType,
   SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent,

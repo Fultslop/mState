@@ -1,4 +1,5 @@
-import { SMStateId, SMStateType } from '../types';
+import type { SMStateId} from '../types';
+import { SMStateType } from '../types';
 import { BaseState } from './BaseState';
 
 export class ForkState extends BaseState {

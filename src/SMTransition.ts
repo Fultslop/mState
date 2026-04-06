@@ -1,5 +1,5 @@
-import { SMStateId, SMStatus, SMTransitionId } from './types';
-import { ISMTransition } from './interfaces';
+import type { SMStateId, SMStatus, SMTransitionId } from './types';
+import type { ISMTransition } from './interfaces';
 
 export class SMTransition implements ISMTransition {
   readonly id: SMTransitionId;

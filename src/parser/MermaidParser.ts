@@ -1,5 +1,7 @@
-import { SMStateMachineId, SMStateId, SMTransitionId, SMStatus } from '../types';
-import { ISMStateMachine } from '../interfaces';
+import type { SMStateMachineId, SMStateId, SMTransitionId } from '../types';
+import type { IGroupState } from '../interfaces';
+import { SMStatus } from '../types';
+import type { ISMStateMachine } from '../interfaces';
 import { SMValidationException } from '../exceptions';
 import { StateMachine } from '../StateMachine';
 import { extractTitle, tokenize } from './tokenizer';
@@ -57,7 +59,7 @@ export class MermaidParser {
     const initIds = new Map<string, string>();
     const termIds = new Map<string, string>();
 
-    const ensureState = (id: string, context: string | null): void => {
+    const ensureState = (id: string): void => {
       if (ensured.has(id)) return;
       ensured.add(id);
       const type = declared.get(id);
@@ -67,10 +69,10 @@ export class MermaidParser {
       if (groupMembers.has(id)) {
         sm.createGroup(id as SMStateId);
         for (const memberId of groupMembers.get(id)!) {
-          ensureState(memberId, id);
+          ensureState(memberId);
           const gs = sm.getState(id as SMStateId);
           const ms = sm.getState(memberId as SMStateId);
-          if (gs && ms) (gs as import('../interfaces').IGroupState).addMember(ms);
+          if (gs && ms) (gs as IGroupState).addMember(ms);
         }
         return;
       }
@@ -83,7 +85,7 @@ export class MermaidParser {
       const id = nextId(context ? `${context}_init` : 'init');
       sm.createInitial(id as SMStateId);
       if (context) {
-        const gs = sm.getState(context as SMStateId) as import('../interfaces').IGroupState;
+        const gs = sm.getState(context as SMStateId) as IGroupState;
         const is = sm.getState(id as SMStateId)!;
         gs?.addMember(is);
       }
@@ -97,7 +99,7 @@ export class MermaidParser {
       const id = nextId(context ? `${context}_term` : 'term');
       sm.createTerminal(id as SMStateId);
       if (context) {
-        const gs = sm.getState(context as SMStateId) as import('../interfaces').IGroupState;
+        const gs = sm.getState(context as SMStateId) as IGroupState;
         const ts = sm.getState(id as SMStateId)!;
         gs?.addMember(ts);
       }
@@ -114,7 +116,7 @@ export class MermaidParser {
       if (tok.kind === 'groupOpen') {
         groupDepthStack.push(currentGroup);
         currentGroup = tok.id;
-        ensureState(tok.id, null);
+        ensureState(tok.id);
         depth++;
         continue;
       }
@@ -132,8 +134,8 @@ export class MermaidParser {
         ? ensureTerminal(currentGroup)
         : tok.to;
 
-      if (tok.from !== '[*]') ensureState(tok.from, currentGroup);
-      if (tok.to   !== '[*]') ensureState(tok.to,   currentGroup);
+      if (tok.from !== '[*]') ensureState(tok.from);
+      if (tok.to   !== '[*]') ensureState(tok.to);
 
       let status: SMStatus | undefined;
       let exitCode: string | undefined;

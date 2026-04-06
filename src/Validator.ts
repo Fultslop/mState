@@ -1,10 +1,10 @@
 import { SMStateType, SMStatus } from './types';
-import type { SMStateId, SMTransitionId } from './types';
-import { ISMState, ISMTransition } from './interfaces';
-import { StateRegistry } from './StateRegistry';
-import { TransitionRegistry } from './TransitionRegistry';
+import type { SMStateId } from './types';
+import type { ISMState, ISMTransition } from './interfaces';
+import type { StateRegistry } from './StateRegistry';
+import type { TransitionRegistry } from './TransitionRegistry';
 import { SMValidationException } from './exceptions';
-import { GroupState } from './states/GroupState';
+import type { GroupState } from './states/GroupState';
 
 export class Validator {
   validate(states: StateRegistry, transitions: TransitionRegistry): void {
