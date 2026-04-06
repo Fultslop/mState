@@ -1,4 +1,4 @@
-import { SMStatus, SMStateType } from './types';
+import { SMStatus, SMStateType } from '@src/types';
 
 describe('SMStatus', () => {
   it('has expected values', () => {

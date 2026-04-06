@@ -1,15 +1,15 @@
-import { SMStatus } from './types';
-import type { SMStateId, SMTransitionId } from './types';
-import type { ISMState, ISMTransition } from './interfaces';
-import { StateRegistry } from './StateRegistry';
-import { TransitionRegistry } from './TransitionRegistry';
-import { TransitionRouter } from './TransitionRouter';
-import { SMRuntimeException } from './exceptions';
-import { SMTransition } from './SMTransition';
-import { TerminalState } from './states/TerminalState';
-import { UserDefinedState } from './states/UserDefinedState';
-import { ChoiceState } from './states/ChoiceState';
-import { ForkState } from './states/ForkState';
+import { SMStatus } from '@src/types';
+import type { SMStateId, SMTransitionId } from '@src/types';
+import type { ISMState, ISMTransition } from '@src/interfaces';
+import { StateRegistry } from '@src/StateRegistry';
+import { TransitionRegistry } from '@src/TransitionRegistry';
+import { TransitionRouter } from '@src/TransitionRouter';
+import { SMRuntimeException } from '@src/exceptions';
+import { SMTransition } from '@src/SMTransition';
+import { TerminalState } from '@src/states/TerminalState';
+import { UserDefinedState } from '@src/states/UserDefinedState';
+import { ChoiceState } from '@src/states/ChoiceState';
+import { ForkState } from '@src/states/ForkState';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;

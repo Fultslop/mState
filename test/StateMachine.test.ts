@@ -1,7 +1,7 @@
-import { SMStateType, SMStatus } from './types';
-import type { SMStateMachineId, SMStateId, SMTransitionId, SMStoppedEvent, SMStateStartEvent } from './types';
-import { StateMachine } from './StateMachine';
-import { SMValidationException, SMRuntimeException } from './exceptions';
+import { SMStateType, SMStatus } from '@src/types';
+import type { SMStateMachineId, SMStateId, SMTransitionId, SMStoppedEvent, SMStateStartEvent } from '@src/types';
+import { StateMachine } from '@src/StateMachine';
+import { SMValidationException, SMRuntimeException } from '@src/exceptions';
 
 const smid = (s: string) => s as SMStateMachineId;
 const sid  = (s: string) => s as SMStateId;

@@ -1,4 +1,4 @@
-import { SMValidationException, SMRuntimeException } from './exceptions';
+import { SMValidationException, SMRuntimeException } from '@src/exceptions';
 
 describe('SMValidationException', () => {
   it('is an Error with the right name and message', () => {

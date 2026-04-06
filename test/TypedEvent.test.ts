@@ -1,4 +1,4 @@
-import { TypedEvent } from './TypedEvent';
+import { TypedEvent } from '@src/TypedEvent';
 
 describe('TypedEvent', () => {
   it('calls a single handler with the emitted event', () => {

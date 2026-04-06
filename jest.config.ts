@@ -5,7 +5,12 @@ const config: Config = {
   testEnvironment: "node",
   roots: ["<rootDir>/src", "<rootDir>/test"],
   testMatch: ["**/*.test.ts", "**/*.spec.ts"],
-  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts"],
+  collectCoverageFrom: ["test/**/*.ts", "!test/**/*.d.ts"],
+  moduleNameMapper: {
+    // The ^ ensures we match from the start of the string
+    // The (.*)$ captures the rest of the path to use in $1
+    '^@src/(.*)$': '<rootDir>/src/$1',
+  },
   coverageThreshold: {
     global: {
       branches: 80,

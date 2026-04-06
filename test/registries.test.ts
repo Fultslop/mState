@@ -1,9 +1,9 @@
-import { SMValidationException } from './exceptions';
-import { StateRegistry } from './StateRegistry';
-import { TransitionRegistry } from './TransitionRegistry';
-import { UserDefinedState } from './states/UserDefinedState';
-import { SMTransition } from './SMTransition';
-import type { SMStateId, SMTransitionId } from './types';
+import { SMValidationException } from '@src/exceptions';
+import { StateRegistry } from '@src/StateRegistry';
+import { TransitionRegistry } from '@src/TransitionRegistry';
+import { UserDefinedState } from '@src/states/UserDefinedState';
+import { SMTransition } from '@src/SMTransition';
+import type { SMStateId, SMTransitionId } from '@src/types';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;

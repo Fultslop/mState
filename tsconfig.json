@@ -21,7 +21,10 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
   },
   "include": ["src", "test"],
   "exclude": ["node_modules", "dist"]
