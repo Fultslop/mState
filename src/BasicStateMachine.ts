@@ -54,15 +54,39 @@ export class BasicStateMachine implements IStateMachine {
   }
 
   deleteState(id: StateId): void {
-    let state = this.getState(id);
-
+    const state = this.getState(id);
     requiresTruthy(state, `cannot find state with id ${id}.`);
 
-    // remove it from the registry
+    // For a GroupState, recursively delete all children first so their
+    // own transitions are cleaned up before we process the group's own edges.
+    if (state.type === StateType.Group) {
+      const group = state as IGroupState;
+      for (const childId of [...group.stateIds]) {
+        this.deleteState(childId);
+      }
+      // Any transitions explicitly tracked by the group that were not yet
+      // removed by the child-state deletions above.
+      for (const tId of [...group.transitionIds]) {
+        if (this._transitions.get(tId)) this.deleteTransition(tId);
+      }
+    }
+
+    // Remove every transition that touches this state.
+    for (const tId of [...state.incoming, ...state.outgoing]) {
+      if (this._transitions.get(tId)) this.deleteTransition(tId);
+    }
+
+    // Detach from parent GroupState if applicable.
+    if (state.parentId) {
+      const parent = this._states.get(state.parentId);
+      if (parent?.type === StateType.Group) {
+        (parent as IGroupState).deleteState(id);
+      }
+    }
+
+    this._active.delete(id);
     this._states.remove(id);
   }
-
-  
 
   getState(id: StateId): IState | undefined {
     return this._states.get(id);
@@ -85,6 +109,23 @@ export class BasicStateMachine implements IStateMachine {
   }
 
   deleteTransition(id: TransitionId): void {
+    const t = this._transitions.get(id);
+    if (!t) return;
+
+    // Remove from the from-state's outgoing set.
+    this._states.get(t.fromStateId)?.outgoing.delete(id);
+
+    // Remove from the to-state's incoming set.
+    this._states.get(t.toStateId)?.incoming.delete(id);
+
+    // Detach from parent GroupState if applicable.
+    if (t.parentId) {
+      const parent = this._states.get(t.parentId);
+      if (parent?.type === StateType.Group) {
+        (parent as IGroupState).deleteTransition(id);
+      }
+    }
+
     this._transitions.remove(id);
   }
 
