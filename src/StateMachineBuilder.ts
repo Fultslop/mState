@@ -1,7 +1,8 @@
+import { BasicStateMachine } from './BasicStateMachine';
 import { SMRuntimeException } from './exceptions';
 import type { IGroupState } from './IGroupState';
 import type { IJoinState } from './IJoinState';
-import type { IState, StateStatus } from './IState';
+import type { IState, StateStatus, StateType } from './IState';
 import type { IStateMachine } from './IStateMachine';
 import type { ITransition } from './ITransition';
 import { ChoiceState } from './states/ChoiceState';
@@ -12,7 +13,24 @@ import { JoinState } from './states/JoinState';
 import { TerminalState } from './states/TerminalState';
 import { UserDefinedState } from './states/UserDefinedState';
 import { Transition } from './Transition';
-import type { StateId, TransitionId } from './types';
+import type { StateId, StateMachineId, TransitionId } from './types';
+
+export class BuildSession {
+    
+  private readonly _stateMachine: IStateMachine;
+  private readonly _builder: StateMachineBuilder;
+
+  constructor(stateMachine?: IStateMachine) {
+    this._stateMachine = stateMachine || new BasicStateMachine(`stateMachine#${crypto.randomUUID()}` as StateMachineId );
+    this._builder = new StateMachineBuilder(this._stateMachine)
+    return this;
+  }
+
+  createInitial(id?: StateId, payload?: unknown): BuildSession {
+    this._builder.createInitial(id || `initial#${crypto.randomUUID()}` as StateId, payload);
+    return this;
+  }
+}
 
 export class StateMachineBuilder {
   constructor(private readonly _stateMachine: IStateMachine) {}
@@ -73,11 +91,15 @@ export class StateMachineBuilder {
     const t = new Transition(id, fromId, toId, status, exitCode);
     this._stateMachine.addTransition(t);
     const from = this._stateMachine.getState(fromId);
-    const to = this._stateMachine.getState(toId);
+    
     if (!from) throw new SMRuntimeException(`fromId '${fromId}' not found`);
+    
+    const to = this._stateMachine.getState(toId);
     if (!to) throw new SMRuntimeException(`toId '${toId}' not found`);
+
     from.outgoing.add(id);
     to.incoming.add(id);
+    
     return t;
   }
 }

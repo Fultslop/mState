@@ -5,6 +5,7 @@ import type { IStateMachine } from '@src/IStateMachine';
 import { SMValidationException } from '../exceptions';
 import { BasicStateMachine } from '../BasicStateMachine';
 import { extractTitle, tokenize } from './tokenizer';
+import { StateMachineBuilder } from '@src/StateMachineBuilder';
 
 const STATUS_MAP: Record<string, StateStatus> = {
   ok: StateStatus.Ok,
@@ -24,6 +25,7 @@ export class MermaidParser {
     const title = extractTitle(diagramText) || nextId('diagram');
     const tokens = tokenize(diagramText);
     const sm = new BasicStateMachine(title as StateMachineId);
+    const builder = new StateMachineBuilder(sm);
 
     const declared = new Map<string, 'choice' | 'fork' | 'join'>();
     const groupStack: string[] = [];
@@ -64,19 +66,19 @@ export class MermaidParser {
       ensured.add(id);
       const type = declared.get(id);
       if (type === 'choice') {
-        sm.createChoice(id as StateId);
+        builder.createChoice(id as StateId);
         return;
       }
       if (type === 'fork') {
-        sm.createFork(id as StateId);
+        builder.createFork(id as StateId);
         return;
       }
       if (type === 'join') {
-        sm.createJoin(id as StateId);
+        builder.createJoin(id as StateId);
         return;
       }
       if (groupMembers.has(id)) {
-        sm.createGroup(id as StateId);
+        builder.createGroup(id as StateId);
         for (const memberId of groupMembers.get(id)!) {
           ensureState(memberId);
           const gs = sm.getState(id as StateId);
@@ -85,14 +87,14 @@ export class MermaidParser {
         }
         return;
       }
-      sm.createState(id as StateId);
+      builder.createState(id as StateId);
     };
 
     const ensureInitial = (context: string | null): string => {
       const key = context ?? '__root__';
       if (initIds.has(key)) return initIds.get(key)!;
       const id = nextId(context ? `${context}_init` : 'init');
-      sm.createInitial(id as StateId);
+      builder.createInitial(id as StateId);
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
         const is = sm.getState(id as StateId)!;
@@ -106,7 +108,7 @@ export class MermaidParser {
       const key = context ?? '__root__';
       if (termIds.has(key)) return termIds.get(key)!;
       const id = nextId(context ? `${context}_term` : 'term');
-      sm.createTerminal(id as StateId);
+      builder.createTerminal(id as StateId);
       if (context) {
         const gs = sm.getState(context as StateId) as IGroupState;
         const ts = sm.getState(id as StateId)!;
@@ -163,7 +165,7 @@ export class MermaidParser {
       }
 
       const tId = nextId('t') as TransitionId;
-      sm.createTransition(tId, fromId as StateId, toId as StateId, status, exitCode);
+      builder.createTransition(tId, fromId as StateId, toId as StateId, status, exitCode);
     }
 
     return sm;

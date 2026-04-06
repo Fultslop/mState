@@ -4,6 +4,7 @@ import { BasicStateMachine } from '../../src/BasicStateMachine';
 import { StateStatus, StateType } from "@src/IState";
 import type { StateMachineId, StateId, TransitionId } from '../../src/types';
 import { SMValidationException, SMRuntimeException } from '../../src/exceptions';
+import { StateMachineBuilder } from '@src/StateMachineBuilder';
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;
@@ -12,40 +13,45 @@ const tid  = (s: string) => s as TransitionId;
 describe('spec 001 — entities', () => {
   it('creates all state types without error', () => {
     const sm = new BasicStateMachine(smid('entities'));
+    const builder = new StateMachineBuilder(sm);
+    
     expect(() => {
-      sm.createInitial(sid('init'));
-      sm.createState(sid('s1'));
-      sm.createTerminal(sid('term'));
-      sm.createChoice(sid('ch'));
-      sm.createFork(sid('fork'));
-      sm.createJoin(sid('join'));
-      sm.createGroup(sid('group'));
+      builder.createInitial(sid('init'));
+      builder.createState(sid('s1'));
+      builder.createTerminal(sid('term'));
+      builder.createChoice(sid('ch'));
+      builder.createFork(sid('fork'));
+      builder.createJoin(sid('join'));
+      builder.createGroup(sid('group'));
     }).not.toThrow();
     expect(sm.getStateCount()).toBe(7);
   });
 
   it('each state type has the correct SMStateType', () => {
     const sm = new BasicStateMachine(smid('types'));
-    expect(sm.createInitial(sid('i')).type).toBe(StateType.Initial);
-    expect(sm.createState(sid('s')).type).toBe(StateType.UserDefined);
-    expect(sm.createTerminal(sid('t')).type).toBe(StateType.Terminal);
-    expect(sm.createChoice(sid('c')).type).toBe(StateType.Choice);
-    expect(sm.createFork(sid('f')).type).toBe(StateType.Fork);
-    expect(sm.createJoin(sid('j')).type).toBe(StateType.Join);
-    expect(sm.createGroup(sid('g')).type).toBe(StateType.Group);
+    const builder = new StateMachineBuilder(sm);
+    expect(builder.createInitial(sid('i')).type).toBe(StateType.Initial);
+    expect(builder.createState(sid('s')).type).toBe(StateType.UserDefined);
+    expect(builder.createTerminal(sid('t')).type).toBe(StateType.Terminal);
+    expect(builder.createChoice(sid('c')).type).toBe(StateType.Choice);
+    expect(builder.createFork(sid('f')).type).toBe(StateType.Fork);
+    expect(builder.createJoin(sid('j')).type).toBe(StateType.Join);
+    expect(builder.createGroup(sid('g')).type).toBe(StateType.Group);
   });
 
   it('states begin with SMStatus.None', () => {
     const sm = new BasicStateMachine(smid('status'));
-    const s = sm.createState(sid('s1'));
+    const builder = new StateMachineBuilder(sm);
+    const s = builder.createState(sid('s1'));
     expect(s.stateStatus).toBe(StateStatus.None);
   });
 
   it('createTransition wires incoming/outgoing and returns the transition', () => {
     const sm = new BasicStateMachine(smid('trans'));
-    const a = sm.createState(sid('a'));
-    const b = sm.createState(sid('b'));
-    const t = sm.createTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok, 'code');
+    const builder = new StateMachineBuilder(sm);
+    const a = builder.createState(sid('a'));
+    const b = builder.createState(sid('b'));
+    const t = builder.createTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok, 'code');
     expect(t.id).toBe(tid('t1'));
     expect(t.fromStateId).toBe(sid('a'));
     expect(t.toStateId).toBe(sid('b'));
