@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import type { StateMachine } from '@src/model/StateMachine';
-import { MermaidParser } from './MermaidParser';
-import { ConfigParser } from './ConfigParser';
+import { parseMermaid } from './MermaidParser';
+import { parseConfig } from './ConfigParser';
 
 const FENCED_BLOCK_RE = /```(\w+)([^\n]*)\n([\s\S]*?)```/g;
 
@@ -13,18 +13,20 @@ interface ExtractedBlock {
 
 function extractBlocks(markdown: string): ExtractedBlock[] {
   const blocks: ExtractedBlock[] = [];
-  let m: RegExpExecArray | null;
   FENCED_BLOCK_RE.lastIndex = 0;
-  while ((m = FENCED_BLOCK_RE.exec(markdown)) !== null) {
+  
+  let m: RegExpExecArray | null = FENCED_BLOCK_RE.exec(markdown);
+  
+  while (m) {
     blocks.push({ lang: m[1]!, info: m[2]!.trim(), content: m[3]! });
+    m = FENCED_BLOCK_RE.exec(markdown);
   }
+
   return blocks;
 }
 
 function parseDiagrams(content: string): StateMachine[] {
   const blocks = extractBlocks(content);
-  const parser = new MermaidParser();
-  const cfgParse = new ConfigParser();
   const machines: StateMachine[] = [];
 
   let pendingConfig: string | null = null;
@@ -32,12 +34,10 @@ function parseDiagrams(content: string): StateMachine[] {
   for (const block of blocks) {
     if (block.lang === 'yaml' && block.info === 'smConfig') {
       pendingConfig = block.content;
-      continue;
-    }
-    if (block.lang === 'mermaid') {
-      const sm = parser.parse(block.content);
+    } else if (block.lang === 'mermaid') {
+      const sm = parseMermaid(block.content);
       if (pendingConfig !== null) {
-        cfgParse.parse(pendingConfig, String(sm.id));
+        parseConfig(pendingConfig, String(sm.id));
         // Config available for consumer use; not exposed on ISMStateMachine in v1.
         pendingConfig = null;
       }
@@ -72,6 +72,6 @@ export function createStateModel(
   }
 
   // Treat entire string as a single diagram
-  const sm = new MermaidParser().parse(input);
+  const sm = parseMermaid(input);
   return [sm];
 }

@@ -1,9 +1,9 @@
-import { ConfigParser } from '@src/parser/ConfigParser';
-import { SMValidationException } from "@src/base/SMValidationException";
+import { parseConfig } from '@src/parser/ConfigParser';
+import { SMValidationException } from '@src/base/SMValidationException';
 
 describe('ConfigParser', () => {
   it('returns empty config when no smConfig block is present', () => {
-    const result = new ConfigParser().parse('', 'myDiagram');
+    const result = parseConfig('', 'myDiagram');
     expect(result).toEqual({ config: undefined, initial: undefined, states: {} });
   });
 
@@ -19,7 +19,7 @@ myDiagram:
       config:
         retries: 3
 `;
-    const result = new ConfigParser().parse(yaml, 'myDiagram');
+    const result = parseConfig(yaml, 'myDiagram');
     expect(result.config).toEqual({ timeout: 5000 });
     expect(result.initial).toEqual({ seed: 42 });
     expect(result.states['execute']?.config).toEqual({ retries: 3 });
@@ -31,11 +31,11 @@ otherDiagram:
   config:
     x: 1
 `;
-    const result = new ConfigParser().parse(yaml, 'myDiagram');
+    const result = parseConfig(yaml, 'myDiagram');
     expect(result).toEqual({ config: undefined, initial: undefined, states: {} });
   });
 
   it('throws SMValidationException for invalid YAML', () => {
-    expect(() => new ConfigParser().parse(': invalid: yaml: ::::', 'x')).toThrow(SMValidationException);
+    expect(() => parseConfig(': invalid: yaml: ::::', 'x')).toThrow(SMValidationException);
   });
 });

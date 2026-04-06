@@ -5,7 +5,7 @@
 //
 import { BasicStateMachine } from '../../src/base/BasicStateMachine';
 import { StateMachineBuilder } from '../../src/base/StateMachineBuilder';
-import { MermaidParser } from '../../src/parser/MermaidParser';
+import { parseMermaid } from '../../src/parser/MermaidParser';
 import { StateStatus } from '../../src/model/State';
 import { compareStateMachines } from '../../src/base/compare';
 import type { StateMachineId, StateId, TransitionId } from '../../src/model/types';
@@ -13,7 +13,7 @@ import type { StateMachineId, StateId, TransitionId } from '../../src/model/type
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;
 const tid  = (s: string) => s as TransitionId;
-const parse = (diagram: string) => new MermaidParser().parse(diagram);
+const parse = (diagram: string) => parseMermaid(diagram);
 
 // ── 002 — basic single state ──────────────────────────────────────────────
 

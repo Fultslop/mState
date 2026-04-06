@@ -1,4 +1,4 @@
-import { MermaidParser } from '@src/parser/MermaidParser';
+import { parseMermaid } from '@src/parser/MermaidParser';
 import { StateType, StateStatus } from "@src/model/State";
 
 const SIMPLE = `
@@ -71,12 +71,12 @@ stateDiagram-v2
 
 describe('MermaidParser', () => {
   it('extracts the diagram title', () => {
-    const sm = new MermaidParser().parse(SIMPLE);
+    const sm = parseMermaid(SIMPLE);
     expect(sm.id).toBe('simple');
   });
 
   it('creates Initial, UserDefined, and Terminal states for simple diagram', () => {
-    const sm = new MermaidParser().parse(SIMPLE);
+    const sm = parseMermaid(SIMPLE);
     const ids = sm.getStateIds();
     expect(ids.some(id => sm.getState(id)?.type === StateType.Initial)).toBe(true);
     expect(ids.some(id => sm.getState(id)?.type === StateType.Terminal)).toBe(true);
@@ -85,19 +85,19 @@ describe('MermaidParser', () => {
   });
 
   it('creates correct transition count for simple diagram', () => {
-    const sm = new MermaidParser().parse(SIMPLE);
+    const sm = parseMermaid(SIMPLE);
     expect(sm.getTransitionCount()).toBe(3); // [*]→init, init→execute, execute→[*]
   });
 
   it('creates a Choice state for <<choice>> declaration', () => {
-    const sm = new MermaidParser().parse(CHOICE);
+    const sm = parseMermaid(CHOICE);
     const choiceId = sm.getStateIds().find(id => sm.getState(id)?.type === StateType.Choice);
     expect(choiceId).toBeDefined();
     expect(String(choiceId)).toBe('loadConfigChoice');
   });
 
   it('attaches status to transitions with bare labels', () => {
-    const sm = new MermaidParser().parse(CHOICE);
+    const sm = parseMermaid(CHOICE);
     const allIds = sm.getTransitionIds();
     const okT = allIds.map(id => sm.getTransition(id)).find(
       t => t?.status === StateStatus.Ok
@@ -107,7 +107,7 @@ describe('MermaidParser', () => {
   });
 
   it('parses Ok/planA transition label into status+exitCode', () => {
-    const sm = new MermaidParser().parse(EXIT_CODE);
+    const sm = parseMermaid(EXIT_CODE);
     const allIds = sm.getTransitionIds();
     const planA = allIds.map(id => sm.getTransition(id)).find(
       t => t?.exitCode === 'planA'
@@ -118,14 +118,14 @@ describe('MermaidParser', () => {
   });
 
   it('creates Fork and Join states', () => {
-    const sm = new MermaidParser().parse(FORK_JOIN);
+    const sm = parseMermaid(FORK_JOIN);
     const ids = sm.getStateIds();
     expect(ids.some(id => sm.getState(id)?.type === StateType.Fork)).toBe(true);
     expect(ids.some(id => sm.getState(id)?.type === StateType.Join)).toBe(true);
   });
 
   it('creates a Group state and registers its members', () => {
-    const sm = new MermaidParser().parse(GROUP);
+    const sm = parseMermaid(GROUP);
     const groupId = sm.getStateIds().find(id => sm.getState(id)?.type === StateType.Group);
     expect(groupId).toBeDefined();
     expect(String(groupId)).toBe('group');
