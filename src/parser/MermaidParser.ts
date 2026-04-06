@@ -5,7 +5,7 @@ import { StateStatus } from '@src/model/State';
 import type { StateMachine } from '@src/model/StateMachine';
 import { SMValidationException } from '@src/base/SMValidationException';
 import { BasicStateMachine } from '../base/BasicStateMachine';
-import { extractTitle, tokenize, type Token } from './tokenizer';
+import { extractTitle, tokenize, type Token, type StateDeclarationType } from './tokenizer';
 import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
 
 const STATUS_MAP: Record<string, StateStatus> = {
@@ -17,18 +17,18 @@ const STATUS_MAP: Record<string, StateStatus> = {
 };
 
 interface CollectResult {
-  declared: Map<string, 'choice' | 'fork' | 'join'>;
+  declared: Map<string, StateDeclarationType>;
   groupMembers: Map<string, Set<string>>;
 }
 
 interface BuildContext {
-  sm: BasicStateMachine;
+  stateMachine: BasicStateMachine;
   builder: StateMachineBuilder;
-  declared: Map<string, 'choice' | 'fork' | 'join'>;
+  declared: Map<string, StateDeclarationType>;
   groupMembers: Map<string, Set<string>>;
   ensured: Set<string>;
-  initIds: Map<string, string>;
-  termIds: Map<string, string>;
+  initialIds: Map<string, string>;
+  terminalIds: Map<string, string>;
 }
 
 interface LabelResult {
@@ -39,16 +39,16 @@ interface LabelResult {
 // ── Pass 1 helpers ───────────────────────────────────────────────────────────
 
 function handleGroupOpen(
-  tok: Extract<Token, { kind: 'groupOpen' }>,
+  token: Extract<Token, { kind: 'groupOpen' }>,
   groupMembers: Map<string, Set<string>>,
   groupStack: string[],
   state: { depth: number; currentGroup: string | null },
 ): void {
-  if (state.depth === 0) state.currentGroup = tok.id;
+  if (state.depth === 0) state.currentGroup = token.id;
   if (state.currentGroup) {
     groupMembers.set(state.currentGroup, groupMembers.get(state.currentGroup) ?? new Set());
   }
-  groupStack.push(tok.id);
+  groupStack.push(token.id);
   state.depth += 1;
 }
 
@@ -62,31 +62,31 @@ function handleGroupClose(
 }
 
 function handleTransitionDecl(
-  tok: Extract<Token, { kind: 'transition' }>,
+  token: Extract<Token, { kind: 'transition' }>,
   groupMembers: Map<string, Set<string>>,
   currentGroup: string | null,
 ): void {
   if (currentGroup === null) return;
   const members = groupMembers.get(currentGroup)!;
-  if (tok.from !== '[*]') members.add(tok.from);
-  if (tok.to !== '[*]') members.add(tok.to);
+  if (token.from !== '[*]') members.add(token.from);
+  if (token.to !== '[*]') members.add(token.to);
 }
 
 function collectDeclarations(tokens: Token[]): CollectResult {
-  const declared = new Map<string, 'choice' | 'fork' | 'join'>();
+  const declared = new Map<string, StateDeclarationType>();
   const groupMembers = new Map<string, Set<string>>();
   const groupStack: string[] = [];
   const state = { depth: 0, currentGroup: null as string | null };
 
-  for (const tok of tokens) {
-    if (tok.kind === 'stateDecl') {
-      declared.set(tok.id, tok.stateType);
-    } else if (tok.kind === 'groupOpen') {
-      handleGroupOpen(tok, groupMembers, groupStack, state);
-    } else if (tok.kind === 'groupClose') {
+  for (const token of tokens) {
+    if (token.kind === 'stateDecl') {
+      declared.set(token.id, token.stateType);
+    } else if (token.kind === 'groupOpen') {
+      handleGroupOpen(token, groupMembers, groupStack, state);
+    } else if (token.kind === 'groupClose') {
       handleGroupClose(groupStack, state);
-    } else if (tok.kind === 'transition') {
-      handleTransitionDecl(tok, groupMembers, state.currentGroup);
+    } else if (token.kind === 'transition') {
+      handleTransitionDecl(token, groupMembers, state.currentGroup);
     }
   }
 
@@ -98,17 +98,20 @@ function collectDeclarations(tokens: Token[]): CollectResult {
 function ensureState(ctx: BuildContext, id: string): void {
   if (ctx.ensured.has(id)) return;
   ctx.ensured.add(id);
-  const type = ctx.declared.get(id);
-  if (type === 'choice') { ctx.builder.createChoice(id as StateId); return; }
-  if (type === 'fork') { ctx.builder.createFork(id as StateId); return; }
-  if (type === 'join') { ctx.builder.createJoin(id as StateId); return; }
+  const stateType = ctx.declared.get(id);
+  switch (stateType) {
+    case 'choice': ctx.builder.createChoice(id as StateId); return;
+    case 'fork':   ctx.builder.createFork(id as StateId); return;
+    case 'join':   ctx.builder.createJoin(id as StateId); return;
+    default: break;
+  }
   if (ctx.groupMembers.has(id)) {
     ctx.builder.createGroup(id as StateId);
     for (const memberId of ctx.groupMembers.get(id)!) {
       ensureState(ctx, memberId);
-      const gs = ctx.sm.getState(id as StateId);
-      const ms = ctx.sm.getState(memberId as StateId);
-      if (gs && ms) (gs as GroupState).addState(ms);
+      const groupState = ctx.stateMachine.getState(id as StateId);
+      const memberState = ctx.stateMachine.getState(memberId as StateId);
+      if (groupState && memberState) (groupState as GroupState).addState(memberState);
     }
     return;
   }
@@ -117,29 +120,29 @@ function ensureState(ctx: BuildContext, id: string): void {
 
 function ensureInitial(ctx: BuildContext, context: string | null): string {
   const key = context ?? '__root__';
-  if (ctx.initIds.has(key)) return ctx.initIds.get(key)!;
+  if (ctx.initialIds.has(key)) return ctx.initialIds.get(key)!;
   const id = context ? `${context}__initial` : 'initial';
   ctx.builder.createInitial(id as StateId);
   if (context) {
-    const gs = ctx.sm.getState(context as StateId) as GroupState;
-    const is = ctx.sm.getState(id as StateId)!;
-    gs?.addState(is);
+    const groupState = ctx.stateMachine.getState(context as StateId) as GroupState;
+    const initialState = ctx.stateMachine.getState(id as StateId)!;
+    groupState?.addState(initialState);
   }
-  ctx.initIds.set(key, id);
+  ctx.initialIds.set(key, id);
   return id;
 }
 
 function ensureTerminal(ctx: BuildContext, context: string | null): string {
   const key = context ?? '__root__';
-  if (ctx.termIds.has(key)) return ctx.termIds.get(key)!;
+  if (ctx.terminalIds.has(key)) return ctx.terminalIds.get(key)!;
   const id = context ? `${context}__terminal` : 'terminal';
   ctx.builder.createTerminal(id as StateId);
   if (context) {
-    const gs = ctx.sm.getState(context as StateId) as GroupState;
-    const ts = ctx.sm.getState(id as StateId)!;
-    gs?.addState(ts);
+    const groupState = ctx.stateMachine.getState(context as StateId) as GroupState;
+    const terminalState = ctx.stateMachine.getState(id as StateId)!;
+    groupState?.addState(terminalState);
   }
-  ctx.termIds.set(key, id);
+  ctx.terminalIds.set(key, id);
   return id;
 }
 
@@ -164,17 +167,19 @@ function parseTransitionLabel(label: string | undefined): LabelResult {
 
 function processTransition(
   ctx: BuildContext,
-  tok: Extract<Token, { kind: 'transition' }>,
+  token: Extract<Token, { kind: 'transition' }>,
   currentGroup: string | null,
 ): void {
-  const fromId = tok.from === '[*]' ? ensureInitial(ctx, currentGroup) : tok.from;
-  const toId = tok.to === '[*]' ? ensureTerminal(ctx, currentGroup) : tok.to;
-  if (tok.from !== '[*]') ensureState(ctx, tok.from);
-  if (tok.to !== '[*]') ensureState(ctx, tok.to);
-  const { status, exitCode } = parseTransitionLabel(tok.label);
+  const fromId = token.from === '[*]' ? ensureInitial(ctx, currentGroup) : token.from;
+  const toId = token.to === '[*]' ? ensureTerminal(ctx, currentGroup) : token.to;
+  if (token.from !== '[*]') ensureState(ctx, token.from);
+  if (token.to !== '[*]') ensureState(ctx, token.to);
+  const { status, exitCode } = parseTransitionLabel(token.label);
   const guardKey = [status ?? '', exitCode ?? ''].filter(Boolean).join('/');
-  const tId = (guardKey ? `${fromId}-->${toId}:${guardKey}` : `${fromId}-->${toId}`) as TransitionId;
-  ctx.builder.createTransition(tId, fromId as StateId, toId as StateId, status, exitCode);
+  const transitionId = (guardKey
+    ? `${fromId}-->${toId}:${guardKey}`
+    : `${fromId}-->${toId}`) as TransitionId;
+  ctx.builder.createTransition(transitionId, fromId as StateId, toId as StateId, status, exitCode);
 }
 
 // ── Pass 2 ───────────────────────────────────────────────────────────────────
@@ -183,15 +188,15 @@ function buildTransitions(ctx: BuildContext, tokens: Token[]): void {
   let currentGroup: string | null = null;
   const groupDepthStack: (string | null)[] = [];
 
-  for (const tok of tokens) {
-    if (tok.kind === 'groupOpen') {
+  for (const token of tokens) {
+    if (token.kind === 'groupOpen') {
       groupDepthStack.push(currentGroup);
-      currentGroup = tok.id;
-      ensureState(ctx, tok.id);
-    } else if (tok.kind === 'groupClose') {
+      currentGroup = token.id;
+      ensureState(ctx, token.id);
+    } else if (token.kind === 'groupClose') {
       currentGroup = groupDepthStack.pop() ?? null;
-    } else if (tok.kind === 'transition') {
-      processTransition(ctx, tok, currentGroup);
+    } else if (token.kind === 'transition') {
+      processTransition(ctx, token, currentGroup);
     }
   }
 }
@@ -201,19 +206,19 @@ function buildTransitions(ctx: BuildContext, tokens: Token[]): void {
 export function parseMermaid(diagramText: string): StateMachine {
   const title = extractTitle(diagramText) || randomUUID();
   const tokens = tokenize(diagramText);
-  const sm = new BasicStateMachine(title as StateMachineId);
+  const stateMachine = new BasicStateMachine(title as StateMachineId);
   const { declared, groupMembers } = collectDeclarations(tokens);
 
   const ctx: BuildContext = {
-    sm,
-    builder: new StateMachineBuilder(sm),
+    stateMachine,
+    builder: new StateMachineBuilder(stateMachine),
     declared,
     groupMembers,
     ensured: new Set(),
-    initIds: new Map(),
-    termIds: new Map(),
+    initialIds: new Map(),
+    terminalIds: new Map(),
   };
 
   buildTransitions(ctx, tokens);
-  return sm;
+  return stateMachine;
 }

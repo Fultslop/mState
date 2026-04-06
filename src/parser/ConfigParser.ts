@@ -13,15 +13,15 @@ export interface DiagramConfig {
 
 const EMPTY: DiagramConfig = { config: undefined, initial: undefined, states: {} };
 
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function parseStates(statesBlock: Record<string, unknown>): Record<string, StateConfig> {
   const states: Record<string, StateConfig> = {};
-  for (const [k, v] of Object.entries(statesBlock)) {
-    if (isRecord(v)) {
-      states[k] = { config: isRecord(v.config) ? v.config : undefined };
+  for (const [key, stateEntry] of Object.entries(statesBlock)) {
+    if (isRecord(stateEntry)) {
+      states[key] = { config: isRecord(stateEntry.config) ? stateEntry.config : undefined };
     }
   }
   return states;
@@ -40,8 +40,8 @@ export function parseConfig(smConfigYaml: string, diagramTitle: string): Diagram
   let parsed: unknown;
   try {
     parsed = yaml.load(smConfigYaml);
-  } catch (e) {
-    throw new SMValidationException(`smConfig YAML parse error: ${(e as Error).message}`);
+  } catch (error) {
+    throw new SMValidationException(`smConfig YAML parse error: ${(error as Error).message}`);
   }
 
   if (!isRecord(parsed)) return EMPTY;

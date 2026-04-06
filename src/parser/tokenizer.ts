@@ -1,6 +1,9 @@
+export const STATE_DECLARATION_TYPES = ['choice', 'fork', 'join'] as const;
+export type StateDeclarationType = typeof STATE_DECLARATION_TYPES[number];
+
 export type Token =
   | { kind: 'transition'; from: string; to: string; label?: string }
-  | { kind: 'stateDecl'; id: string; stateType: 'choice' | 'fork' | 'join' }
+  | { kind: 'stateDecl'; id: string; stateType: StateDeclarationType }
   | { kind: 'groupOpen'; id: string }
   | { kind: 'groupClose' }
   | { kind: 'direction' };
@@ -14,34 +17,38 @@ const FRONTMATTER_RE = /^---[\s\S]*?---/m;
 const HEADER_RE = /^\s*stateDiagram-v2\s*$/m;
 
 export function extractTitle(diagramText: string): string {
-  const m = diagramText.match(/^---\s*\ntitle:\s*(.+?)\s*\n---/m);
-  return m?.[1] ?? '';
+  const match = diagramText.match(/^---\s*\ntitle:\s*(.+?)\s*\n---/m);
+  return match?.[1] ?? '';
 }
 
-function parseStateDecl(decl: RegExpExecArray): Token | null {
-  const rawType = decl[2]!.toLowerCase();
-  if (rawType === 'choice' || rawType === 'fork' || rawType === 'join') {
-    return { kind: 'stateDecl', id: decl[1]!, stateType: rawType };
+function isStateDeclarationType(value: string): value is StateDeclarationType {
+  return (STATE_DECLARATION_TYPES as readonly string[]).includes(value);
+}
+
+function parseStateDecl(match: RegExpExecArray): Token | null {
+  const rawType = match[2]!.toLowerCase();
+  if (isStateDeclarationType(rawType)) {
+    return { kind: 'stateDecl', id: match[1]!, stateType: rawType };
   }
   return null;
 }
 
-function parseTransition(trans: RegExpExecArray): Token {
-  const from = trans[1]!.trim();
-  const to = trans[2]!.trim();
-  const label = trans[3]?.trim();
+function parseTransition(match: RegExpExecArray): Token {
+  const from = match[1]!.trim();
+  const to = match[2]!.trim();
+  const label = match[3]?.trim();
   return { kind: 'transition', from, to, ...(label !== undefined ? { label } : {}) };
 }
 
 function parseLine(line: string): Token | null {
   if (DIRECTION_RE.test(line)) return { kind: 'direction' };
-  const decl = STATE_DECL_RE.exec(line);
-  if (decl) return parseStateDecl(decl);
-  const grpOpen = GROUP_OPEN_RE.exec(line);
-  if (grpOpen) return { kind: 'groupOpen', id: grpOpen[1]! };
+  const stateDecl = STATE_DECL_RE.exec(line);
+  if (stateDecl) return parseStateDecl(stateDecl);
+  const groupOpen = GROUP_OPEN_RE.exec(line);
+  if (groupOpen) return { kind: 'groupOpen', id: groupOpen[1]! };
   if (GROUP_CLOSE_RE.test(line)) return { kind: 'groupClose' };
-  const trans = TRANSITION_RE.exec(line);
-  if (trans) return parseTransition(trans);
+  const transition = TRANSITION_RE.exec(line);
+  if (transition) return parseTransition(transition);
   return null;
 }
 
@@ -52,8 +59,8 @@ export function tokenize(diagramText: string): Token[] {
   for (const raw of body.split('\n')) {
     const line = raw.trim().replace(/%%.*$/, '').trim();
     if (line) {
-      const tok = parseLine(line);
-      if (tok) tokens.push(tok);
+      const token = parseLine(line);
+      if (token) tokens.push(token);
     }
   }
 

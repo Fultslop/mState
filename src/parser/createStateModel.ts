@@ -3,6 +3,10 @@ import type { StateMachine } from '@src/model/StateMachine';
 import { parseMermaid } from './MermaidParser';
 import { parseConfig } from './ConfigParser';
 
+const MERMAID_LANG = 'mermaid';
+const CONFIG_LANG = 'yaml';
+const CONFIG_INFO = 'smConfig';
+
 const FENCED_BLOCK_RE = /```(\w+)([^\n]*)\n([\s\S]*?)```/g;
 
 interface ExtractedBlock {
@@ -14,12 +18,12 @@ interface ExtractedBlock {
 function extractBlocks(markdown: string): ExtractedBlock[] {
   const blocks: ExtractedBlock[] = [];
   FENCED_BLOCK_RE.lastIndex = 0;
-  
-  let m: RegExpExecArray | null = FENCED_BLOCK_RE.exec(markdown);
-  
-  while (m) {
-    blocks.push({ lang: m[1]!, info: m[2]!.trim(), content: m[3]! });
-    m = FENCED_BLOCK_RE.exec(markdown);
+
+  let match: RegExpExecArray | null = FENCED_BLOCK_RE.exec(markdown);
+
+  while (match) {
+    blocks.push({ lang: match[1]!, info: match[2]!.trim(), content: match[3]! });
+    match = FENCED_BLOCK_RE.exec(markdown);
   }
 
   return blocks;
@@ -32,16 +36,16 @@ function parseDiagrams(content: string): StateMachine[] {
   let pendingConfig: string | null = null;
 
   for (const block of blocks) {
-    if (block.lang === 'yaml' && block.info === 'smConfig') {
+    if (block.lang === CONFIG_LANG && block.info === CONFIG_INFO) {
       pendingConfig = block.content;
-    } else if (block.lang === 'mermaid') {
-      const sm = parseMermaid(block.content);
+    } else if (block.lang === MERMAID_LANG) {
+      const stateMachine = parseMermaid(block.content);
       if (pendingConfig !== null) {
-        parseConfig(pendingConfig, String(sm.id));
+        parseConfig(pendingConfig, String(stateMachine.id));
         // Config available for consumer use; not exposed on ISMStateMachine in v1.
         pendingConfig = null;
       }
-      machines.push(sm);
+      machines.push(stateMachine);
     }
   }
 
@@ -67,11 +71,10 @@ export function createStateModel(
 
   // Inline string — could be a raw diagram or a markdown document with fenced blocks
   const blocks = extractBlocks(input);
-  if (blocks.some((b) => b.lang === 'mermaid')) {
+  if (blocks.some(({ lang }) => lang === MERMAID_LANG)) {
     return parseDiagrams(input);
   }
 
   // Treat entire string as a single diagram
-  const sm = parseMermaid(input);
-  return [sm];
+  return [parseMermaid(input)];
 }

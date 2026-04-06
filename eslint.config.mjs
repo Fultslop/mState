@@ -70,5 +70,12 @@ export default [
       "no-redeclare": "off",          // TS function overloads look like redeclarations; TS compiler handles this
     },
   },
+  // Parser files: stricter naming — no single-letter or two-letter identifiers
+  {
+    files: ["src/parser/**/*.ts"],
+    rules: {
+      "id-length": ["error", { "min": 3, "exceptions": ["id", "to", "ok", "fs"] }],
+    },
+  },
   prettierConfig, // Always last
 ];
