@@ -3,7 +3,11 @@ import type {
   SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent} from './types';
 import { SMStatus, SMStateType
 } from './types';
-import type { ISMState, ISMTransition, ISMStateMachine, IJoinState, IGroupState } from './interfaces';
+import type { ISMStateMachine } from './ISMStateMachine';
+import type { IGroupState } from './IGroupState';
+import type { IJoinState } from './IJoinState';
+import type { ISMTransition } from './ISMTransition';
+import type { ISMState } from './ISMState';
 import { TypedEvent } from './TypedEvent';
 import { StateRegistry } from './StateRegistry';
 import { TransitionRegistry } from './TransitionRegistry';

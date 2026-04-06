@@ -1,6 +1,7 @@
 import { SMStateType, SMStatus } from './types';
 import type { SMStateId, SMTransitionId } from './types';
-import type { ISMState, ISMTransition } from './interfaces';
+import type { ISMTransition } from './ISMTransition';
+import type { ISMState } from './ISMState';
 import type { StateRegistry } from './StateRegistry';
 import type { TransitionRegistry } from './TransitionRegistry';
 import { SMRuntimeException } from './exceptions';

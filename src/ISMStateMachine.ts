@@ -1,47 +1,18 @@
+import { IGroupState } from './IGroupState';
+import { IJoinState } from './IJoinState';
+import { ISMState } from './ISMState';
+import { ISMTransition } from './ISMTransition';
 import type { TypedEvent } from './TypedEvent';
-import type {
-  SMStateMachineId, SMStateId, SMTransitionId,
-  SMStatus, SMStateType,
-  SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent,
-} from './types';
+import type { SMStateMachineId, SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent, SMStateId, SMStatus, SMTransitionId } from './types';
 
-export interface ISMTransition {
-  readonly id: SMTransitionId;
-  readonly fromStateId: SMStateId;
-  readonly toStateId: SMStateId;
-  readonly status: SMStatus | undefined;
-  readonly exitCode: string | undefined;
-}
-
-export interface ISMState {
-  readonly id: SMStateId;
-  readonly type: SMStateType;
-  stateStatus: SMStatus;
-  readonly config: Record<string, unknown> | undefined;
-  readonly incoming: Set<SMTransitionId>;
-  readonly outgoing: Set<SMTransitionId>;
-}
-
-export interface IJoinState extends ISMState {
-  readonly isComplete: boolean;
-  onDependencyComplete(evt: SMStateStartEvent): void;
-  reset(): void;
-  readonly receivedPayloads: SMStateStartEvent[];
-}
-
-export interface IGroupState extends ISMState {
-  readonly memberIds: Set<SMStateId>;
-  hasMember(stateId: SMStateId): boolean;
-  addMember(state: ISMState): void;
-}
 
 export interface ISMStateMachine {
   readonly id: SMStateMachineId;
 
-  readonly onSMStarted:    TypedEvent<SMStartedEvent>;
-  readonly onStateStart:   TypedEvent<SMStateStartEvent | SMStateStartEvent[]>;
+  readonly onSMStarted: TypedEvent<SMStartedEvent>;
+  readonly onStateStart: TypedEvent<SMStateStartEvent | SMStateStartEvent[]>;
   readonly onStateStopped: TypedEvent<SMStateStoppedEvent>;
-  readonly onSMStopped:    TypedEvent<SMStoppedEvent>;
+  readonly onSMStopped: TypedEvent<SMStoppedEvent>;
 
   start(): void;
   stop(): void;
@@ -62,7 +33,7 @@ export interface ISMStateMachine {
     fromId: SMStateId,
     toId: SMStateId,
     status?: SMStatus,
-    exitCode?: string,
+    exitCode?: string
   ): ISMTransition;
 
   getState(id: SMStateId): ISMState | undefined;

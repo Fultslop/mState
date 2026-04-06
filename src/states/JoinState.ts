@@ -1,6 +1,6 @@
 import { SMStateType } from '../types';
 import type { SMStateStartEvent , SMStateId, SMTransitionId } from '../types';
-import type { IJoinState } from '../interfaces';
+import type { IJoinState } from '@src/IJoinState';
 import { BaseState } from './BaseState';
 
 export class JoinState extends BaseState implements IJoinState {

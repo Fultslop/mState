@@ -1,10 +1,10 @@
-import { SMStateType, SMStatus } from '../types';
-import type { SMStateId } from '../types';
-import { InitialState } from './InitialState';
-import { TerminalState } from './TerminalState';
-import { UserDefinedState } from './UserDefinedState';
-import { ChoiceState } from './ChoiceState';
-import { ForkState } from './ForkState';
+import { SMStateType, SMStatus } from '@src/types';
+import type { SMStateId } from '@src/types';
+import { InitialState } from '@src/states/InitialState';
+import { TerminalState } from '@src/states/TerminalState';
+import { UserDefinedState } from '@src/states/UserDefinedState';
+import { ChoiceState } from '@src/states/ChoiceState';
+import { ForkState } from '@src/states/ForkState';
 
 const id = 's1' as SMStateId;
 

@@ -1,7 +1,7 @@
 import type { SMStateMachineId, SMStateId, SMTransitionId } from '../types';
-import type { IGroupState } from '../interfaces';
+import type { IGroupState } from '@src/IGroupState';
 import { SMStatus } from '../types';
-import type { ISMStateMachine } from '../interfaces';
+import type { ISMStateMachine } from '@src/ISMStateMachine';
 import { SMValidationException } from '../exceptions';
 import { StateMachine } from '../StateMachine';
 import { extractTitle, tokenize } from './tokenizer';

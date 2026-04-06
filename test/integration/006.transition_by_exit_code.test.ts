@@ -1,7 +1,7 @@
 // src/__integration__/006.transition_by_exit_code.test.ts
-import { StateMachine } from '../StateMachine';
-import { SMStatus } from '../types';
-import type { SMStateMachineId, SMStateId, SMTransitionId } from '../types';
+import { StateMachine } from '../../src/StateMachine';
+import { SMStatus } from '../../src/types';
+import type { SMStateMachineId, SMStateId, SMTransitionId } from '../../src/types';
 
 const smid = (s: string) => s as SMStateMachineId;
 const sid  = (s: string) => s as SMStateId;

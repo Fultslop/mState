@@ -1,5 +1,5 @@
 import type { SMTransitionId } from './types';
-import type { ISMTransition } from './interfaces';
+import type { ISMTransition } from './ISMTransition';
 import { SMValidationException } from './exceptions';
 
 export class TransitionRegistry {

@@ -1,9 +1,9 @@
-import { SMStateType } from '../types';
-import type { SMStateId, SMTransitionId } from '../types';
-import type { SMStateStartEvent } from '../types';
-import { JoinState } from './JoinState';
-import { GroupState } from './GroupState';
-import { UserDefinedState } from './UserDefinedState';
+import { SMStateType } from '@src/types';
+import type { SMStateId, SMTransitionId } from '@src/types';
+import type { SMStateStartEvent } from '@src/types';
+import { JoinState } from '@src/states/JoinState';
+import { GroupState } from '@src/states/GroupState';
+import { UserDefinedState } from '@src/states/UserDefinedState';
 
 const sid = (s: string) => s as SMStateId;
 const tid = (s: string) => s as SMTransitionId;

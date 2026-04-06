@@ -1,7 +1,7 @@
 // src/__integration__/007.payloads.test.ts
-import { StateMachine } from '../StateMachine';
-import { SMStatus } from '../types';
-import type { SMStateMachineId, SMStateId, SMTransitionId, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent } from '../types';
+import { StateMachine } from '../../src/StateMachine';
+import { SMStatus } from '../../src/types';
+import type { SMStateMachineId, SMStateId, SMTransitionId, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent } from '../../src/types';
 
 const smid = (s: string) => s as SMStateMachineId;
 const sid  = (s: string) => s as SMStateId;

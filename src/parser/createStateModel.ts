@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import type { ISMStateMachine } from '../interfaces';
+import type { ISMStateMachine } from '@src/ISMStateMachine';
 import { MermaidParser } from './MermaidParser';
 import { ConfigParser } from './ConfigParser';
 

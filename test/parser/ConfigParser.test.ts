@@ -1,5 +1,5 @@
-import { ConfigParser } from './ConfigParser';
-import { SMValidationException } from '../exceptions';
+import { ConfigParser } from '@src/parser/ConfigParser';
+import { SMValidationException } from '@src/exceptions';
 
 describe('ConfigParser', () => {
   it('returns empty config when no smConfig block is present', () => {

@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { createStateModel } from './createStateModel';
-import { SMStateType } from '../types';
+import { createStateModel } from '@src/parser/createStateModel';
+import { SMStateType } from '@src/types';
 
 const INLINE = `
 ---

@@ -1,5 +1,5 @@
-import { MermaidParser } from './MermaidParser';
-import { SMStateType, SMStatus } from '../types';
+import { MermaidParser } from '@src/parser/MermaidParser';
+import { SMStateType, SMStatus } from '@src/types';
 
 const SIMPLE = `
 ---
