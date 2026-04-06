@@ -1,7 +1,7 @@
 import { SMStateType, SMStatus } from './types';
 import type { SMStateMachineId, SMStateId, SMTransitionId } from './types';
 import { StateMachine } from './StateMachine';
-import { SMValidationException } from './exceptions';
+import { SMValidationException, SMRuntimeException } from './exceptions';
 
 const smid = (s: string) => s as SMStateMachineId;
 const sid  = (s: string) => s as SMStateId;
@@ -86,5 +86,189 @@ describe('StateMachine construction', () => {
     expect(sm.getStateIds()).toContain(sid('a'));
     sm.removeState(sid('a'));
     expect(sm.getStateIds()).not.toContain(sid('a'));
+  });
+});
+
+// Helper: minimal valid SM (init → s1 → term)
+function makeMinimalSM() {
+  const sm = new StateMachine(smid('sm'));
+  const init = sm.createInitial(sid('init'));
+  const s1   = sm.createState(sid('s1'));
+  const term = sm.createTerminal(sid('term'));
+  sm.createTransition(tid('t0'), init.id, s1.id);
+  sm.createTransition(tid('t1'), s1.id, term.id);
+  return { sm, init, s1, term };
+}
+
+describe('StateMachine.start()', () => {
+  it('throws SMRuntimeException when no Initial state exists', () => {
+    const sm = new StateMachine(smid('sm'));
+    sm.createState(sid('s1'));
+    expect(() => sm.start()).toThrow(SMRuntimeException);
+  });
+
+  it('emits onSMStarted then onStateStart for first real state', () => {
+    const { sm } = makeMinimalSM();
+    const events: string[] = [];
+    sm.onSMStarted.add(e => events.push(`started:${e.statemachineId}`));
+    sm.onStateStart.add(e => {
+      const evt = Array.isArray(e) ? e[0]! : e;
+      events.push(`stateStart:${evt.toStateId}`);
+    });
+    sm.start();
+    expect(events).toEqual(['started:sm', 'stateStart:s1']);
+  });
+
+  it('sets the first real state to Active', () => {
+    const { sm, s1 } = makeMinimalSM();
+    sm.start();
+    expect(s1.stateStatus).toBe(SMStatus.Active);
+    expect(sm.getActiveStateIds()).toContain(sid('s1'));
+  });
+});
+
+describe('StateMachine.onStopped()', () => {
+  it('throws when state is unknown', () => {
+    const { sm } = makeMinimalSM();
+    sm.start();
+    expect(() => sm.onStopped(sid('ghost'), SMStatus.Ok)).toThrow(SMRuntimeException);
+  });
+
+  it('throws when state is not Active', () => {
+    const { sm } = makeMinimalSM();
+    sm.start();
+    // s1 is active; trying to stop a non-active state
+    expect(() => sm.onStopped(sid('init'), SMStatus.Ok)).toThrow(SMRuntimeException);
+  });
+
+  it('emits onStateStopped then onSMStopped when reaching Terminal', () => {
+    const { sm } = makeMinimalSM();
+    const events: string[] = [];
+    sm.onStateStopped.add(e => events.push(`stopped:${e.stateId}`));
+    sm.onSMStopped.add(e => events.push(`smStopped:${e.stateStatus}`));
+    sm.start();
+    sm.onStopped(sid('s1'), SMStatus.Ok);
+    expect(events).toEqual(['stopped:s1', 'smStopped:ok']);
+  });
+
+  it('routes to next state on non-terminal transition', () => {
+    const sm = new StateMachine(smid('sm'));
+    const init = sm.createInitial(sid('init'));
+    const s1   = sm.createState(sid('s1'));
+    const s2   = sm.createState(sid('s2'));
+    const term = sm.createTerminal(sid('term'));
+    sm.createTransition(tid('t0'), init.id, s1.id);
+    sm.createTransition(tid('t1'), s1.id, s2.id);
+    sm.createTransition(tid('t2'), s2.id, term.id);
+    sm.start();
+
+    const events: string[] = [];
+    sm.onStateStart.add(e => {
+      const evt = Array.isArray(e) ? e[0]! : e;
+      events.push(`start:${evt.toStateId}`);
+    });
+    sm.onStopped(sid('s1'), SMStatus.Ok);
+    expect(events).toEqual(['start:s2']);
+    expect(s2.stateStatus).toBe(SMStatus.Active);
+  });
+
+  it('emits onSMStopped with Error when narrowed transition does not match', () => {
+    const sm = new StateMachine(smid('sm'));
+    const init = sm.createInitial(sid('init'));
+    const s1   = sm.createState(sid('s1'));
+    const s2   = sm.createState(sid('s2'));
+    const term = sm.createTerminal(sid('term'));
+    sm.createTransition(tid('t0'), init.id, s1.id);
+    sm.createTransition(tid('t1'), s1.id, s2.id, SMStatus.Ok);
+    sm.createTransition(tid('t2'), s2.id, term.id);
+
+    sm.start();
+    const smStopped: import('./types').SMStoppedEvent[] = [];
+    sm.onSMStopped.add(e => smStopped.push(e));
+    sm.onStopped(sid('s1'), SMStatus.Error); // doesn't match Ok
+    expect(smStopped[0]?.stateStatus).toBe(SMStatus.Error);
+  });
+
+  it('Fork: emits array onStateStart and activates all branches', () => {
+    const sm   = new StateMachine(smid('sm'));
+    const init = sm.createInitial(sid('init'));
+    const s1   = sm.createState(sid('s1'));
+    const fork = sm.createFork(sid('fork'));
+    const a    = sm.createState(sid('a'));
+    const b    = sm.createState(sid('b'));
+    const join = sm.createJoin(sid('join'));
+    const out  = sm.createState(sid('out'));
+    const term = sm.createTerminal(sid('term'));
+    sm.createTransition(tid('t0'), init.id, s1.id);
+    sm.createTransition(tid('t1'), s1.id, fork.id);
+    sm.createTransition(tid('f1'), fork.id, a.id);
+    sm.createTransition(tid('f2'), fork.id, b.id);
+    sm.createTransition(tid('j1'), a.id, join.id);
+    sm.createTransition(tid('j2'), b.id, join.id);
+    sm.createTransition(tid('t2'), join.id, out.id);
+    sm.createTransition(tid('t3'), out.id, term.id);
+
+    sm.start();
+    let forkEvents: import('./types').SMStateStartEvent[] | null = null;
+    sm.onStateStart.add(e => {
+      if (Array.isArray(e)) forkEvents = e;
+    });
+    sm.onStopped(sid('s1'), SMStatus.Ok); // enters fork
+
+    expect(forkEvents).not.toBeNull();
+    expect(forkEvents!).toHaveLength(2);
+    expect(a.stateStatus).toBe(SMStatus.Active);
+    expect(b.stateStatus).toBe(SMStatus.Active);
+  });
+
+  it('Join: waits for all branches then routes forward', () => {
+    const sm   = new StateMachine(smid('sm'));
+    const init = sm.createInitial(sid('init'));
+    const s1   = sm.createState(sid('s1'));
+    const fork = sm.createFork(sid('fork'));
+    const a    = sm.createState(sid('a'));
+    const b    = sm.createState(sid('b'));
+    const join = sm.createJoin(sid('join'));
+    const out  = sm.createState(sid('out'));
+    const term = sm.createTerminal(sid('term'));
+    sm.createTransition(tid('t0'), init.id, s1.id);
+    sm.createTransition(tid('t1'), s1.id, fork.id);
+    sm.createTransition(tid('f1'), fork.id, a.id);
+    sm.createTransition(tid('f2'), fork.id, b.id);
+    sm.createTransition(tid('j1'), a.id, join.id);
+    sm.createTransition(tid('j2'), b.id, join.id);
+    sm.createTransition(tid('t2'), join.id, out.id);
+    sm.createTransition(tid('t3'), out.id, term.id);
+
+    sm.start();
+    sm.onStopped(sid('s1'), SMStatus.Ok);
+
+    const afterJoin: string[] = [];
+    sm.onStateStart.add(e => {
+      const evt = Array.isArray(e) ? e[0]! : e;
+      afterJoin.push(evt.toStateId);
+    });
+
+    sm.onStopped(sid('a'), SMStatus.Ok, undefined, 'payloadA');
+    expect(out.stateStatus).not.toBe(SMStatus.Active); // b not done yet
+    sm.onStopped(sid('b'), SMStatus.Ok, undefined, 'payloadB');
+    expect(afterJoin).toContain(sid('out'));
+    expect(out.stateStatus).toBe(SMStatus.Active);
+  });
+});
+
+describe('StateMachine.stop()', () => {
+  it('emits onSMStopped with Canceled and clears active states', () => {
+    const { sm, s1 } = makeMinimalSM();
+    sm.start();
+    expect(sm.getActiveStateIds()).toContain(sid('s1'));
+
+    const events: import('./types').SMStoppedEvent[] = [];
+    sm.onSMStopped.add(e => events.push(e));
+    sm.stop();
+
+    expect(events[0]?.stateStatus).toBe(SMStatus.Canceled);
+    expect(s1.stateStatus).toBe(SMStatus.Canceled);
+    expect(sm.getActiveStateIds()).toHaveLength(0);
   });
 });
