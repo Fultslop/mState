@@ -1,0 +1,81 @@
+import { TypedEvent } from './TypedEvent';
+import {
+  SMStateMachineId, SMStateId, SMTransitionId,
+  SMStatus, SMStateType,
+  SMStartedEvent, SMStateStartEvent, SMStateStoppedEvent, SMStoppedEvent,
+} from './types';
+
+export interface ISMTransition {
+  readonly id: SMTransitionId;
+  readonly fromStateId: SMStateId;
+  readonly toStateId: SMStateId;
+  readonly status: SMStatus | undefined;
+  readonly exitCode: string | undefined;
+}
+
+export interface ISMState {
+  readonly id: SMStateId;
+  readonly type: SMStateType;
+  stateStatus: SMStatus;
+  readonly config: Record<string, unknown> | undefined;
+  readonly incoming: Set<SMTransitionId>;
+  readonly outgoing: Set<SMTransitionId>;
+}
+
+export interface IJoinState extends ISMState {
+  readonly isComplete: boolean;
+  onDependencyComplete(evt: SMStateStartEvent): void;
+  reset(): void;
+  readonly receivedPayloads: SMStateStartEvent[];
+}
+
+export interface IGroupState extends ISMState {
+  readonly memberIds: Set<SMStateId>;
+  hasMember(stateId: SMStateId): boolean;
+  addMember(state: ISMState): void;
+}
+
+export interface ISMStateMachine {
+  readonly id: SMStateMachineId;
+
+  readonly onSMStarted:    TypedEvent<SMStartedEvent>;
+  readonly onStateStart:   TypedEvent<SMStateStartEvent | SMStateStartEvent[]>;
+  readonly onStateStopped: TypedEvent<SMStateStoppedEvent>;
+  readonly onSMStopped:    TypedEvent<SMStoppedEvent>;
+
+  start(): void;
+  stop(): void;
+  validate(): void;
+
+  onStopped(id: SMStateId, status: SMStatus, exitCode?: string, payload?: unknown): void;
+
+  createInitial(id: SMStateId, payload?: unknown): ISMState;
+  createState(id: SMStateId, config?: Record<string, unknown>): ISMState;
+  createTerminal(id: SMStateId): ISMState;
+  createChoice(id: SMStateId): ISMState;
+  createFork(id: SMStateId, clonePayload?: (p: unknown) => unknown): ISMState;
+  createJoin(id: SMStateId): IJoinState;
+  createGroup(id: SMStateId, config?: Record<string, unknown>): IGroupState;
+
+  createTransition(
+    id: SMTransitionId,
+    fromId: SMStateId,
+    toId: SMStateId,
+    status?: SMStatus,
+    exitCode?: string,
+  ): ISMTransition;
+
+  getState(id: SMStateId): ISMState | undefined;
+  getStateCount(): number;
+  getStateIds(): ReadonlyArray<SMStateId>;
+  getActiveStateIds(): ReadonlyArray<SMStateId>;
+
+  getTransition(id: SMTransitionId): ISMTransition | undefined;
+  getTransitionCount(): number;
+  getTransitionIds(): ReadonlyArray<SMTransitionId>;
+
+  addState(state: ISMState): void;
+  removeState(id: SMStateId): void;
+  addTransition(transition: ISMTransition): void;
+  removeTransition(id: SMTransitionId): void;
+}
