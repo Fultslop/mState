@@ -23,13 +23,13 @@ describe('spec 003 — basic transition', () => {
   it('full event sequence with Ok', () => {
     const sm = build();
     const events: string[] = [];
-    sm.onSMStarted.add(()    => events.push('SMStarted'));
+    sm.onStateMachineStarted.add(()    => events.push('SMStarted'));
     sm.onStateStart.add(e    => {
       const evt = Array.isArray(e) ? e[0]! : e;
       events.push(`Start:${evt.toStateId}`);
     });
     sm.onStateStopped.add(e  => events.push(`Stopped:${e.stateId}`));
-    sm.onSMStopped.add(e     => events.push(`SMStopped:${e.stateStatus}`));
+    sm.onStateMachineStopped.add(e     => events.push(`SMStopped:${e.stateStatus}`));
 
     sm.start();
     sm.onStopped(sid('init'), StateStatus.Ok);

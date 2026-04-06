@@ -1,5 +1,5 @@
 import type { StateId, TransitionId } from './types';
-import type { StateStatus } from "./IState";
+import type { StateStatus } from './IState';
 import type { ITransition } from './ITransition';
 
 export class Transition implements ITransition {

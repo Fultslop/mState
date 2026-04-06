@@ -1,7 +1,13 @@
 import type {
-  StateMachineId, StateId, TransitionId,
-  StateMachineStartedEvent, StateStartEvent, StateStoppedEvent, StateMachineStoppedEvent} from './types';
-import { StateStatus, StateType } from "./IState";
+  StateMachineId,
+  StateId,
+  TransitionId,
+  StateMachineStartedEvent,
+  StateStartEvent,
+  StateStoppedEvent,
+  StateMachineStoppedEvent,
+} from './types';
+import { StateStatus, StateType } from './IState';
 import type { IStateMachine } from './IStateMachine';
 import type { IGroupState } from './IGroupState';
 import type { IJoinState } from './IJoinState';
@@ -24,16 +30,16 @@ import { GroupState } from './states/GroupState';
 
 export class BasicStateMachine implements IStateMachine {
   readonly id: StateMachineId;
-  readonly onSMStarted    = new TypedEvent<StateMachineStartedEvent>();
-  readonly onStateStart   = new TypedEvent<StateStartEvent | StateStartEvent[]>();
+  readonly onStateMachineStarted = new TypedEvent<StateMachineStartedEvent>();
+  readonly onStateStart = new TypedEvent<StateStartEvent | StateStartEvent[]>();
   readonly onStateStopped = new TypedEvent<StateStoppedEvent>();
-  readonly onSMStopped    = new TypedEvent<StateMachineStoppedEvent>();
+  readonly onStateMachineStopped = new TypedEvent<StateMachineStoppedEvent>();
 
-  private readonly _states      = new StateRegistry();
+  private readonly _states = new StateRegistry();
   private readonly _transitions = new TransitionRegistry();
   private readonly _router: TransitionRouter;
-  private readonly _validator   = new Validator();
-  private readonly _active      = new Set<StateId>();
+  private readonly _validator = new Validator();
+  private readonly _active = new Set<StateId>();
 
   constructor(id: StateMachineId) {
     this.id = id;
@@ -94,9 +100,9 @@ export class BasicStateMachine implements IStateMachine {
     const t = new Transition(id, fromId, toId, status, exitCode);
     this._transitions.add(t);
     const from = this._states.get(fromId);
-    const to   = this._states.get(toId);
+    const to = this._states.get(toId);
     if (!from) throw new SMRuntimeException(`fromId '${fromId}' not found`);
-    if (!to)   throw new SMRuntimeException(`toId '${toId}' not found`);
+    if (!to) throw new SMRuntimeException(`toId '${toId}' not found`);
     from.outgoing.add(id);
     to.incoming.add(id);
     return t;
@@ -104,30 +110,54 @@ export class BasicStateMachine implements IStateMachine {
 
   // ── Registry access ───────────────────────────────────────────────────────
 
-  addState(state: IState): void { this._states.add(state); }
-  removeState(id: StateId): void { this._states.remove(id); }
-  getState(id: StateId): IState | undefined { return this._states.get(id); }
-  getStateCount(): number { return this._states.count(); }
-  getStateIds(): ReadonlyArray<StateId> { return this._states.ids(); }
-  getActiveStateIds(): ReadonlyArray<StateId> { return Array.from(this._active); }
+  addState(state: IState): void {
+    this._states.add(state);
+  }
+  removeState(id: StateId): void {
+    this._states.remove(id);
+  }
+  getState(id: StateId): IState | undefined {
+    return this._states.get(id);
+  }
+  getStateCount(): number {
+    return this._states.count();
+  }
+  getStateIds(): ReadonlyArray<StateId> {
+    return this._states.ids();
+  }
+  getActiveStateIds(): ReadonlyArray<StateId> {
+    return Array.from(this._active);
+  }
 
-  addTransition(t: ITransition): void { this._transitions.add(t); }
-  removeTransition(id: TransitionId): void { this._transitions.remove(id); }
-  getTransition(id: TransitionId): ITransition | undefined { return this._transitions.get(id); }
-  getTransitionCount(): number { return this._transitions.count(); }
-  getTransitionIds(): ReadonlyArray<TransitionId> { return this._transitions.ids(); }
+  addTransition(t: ITransition): void {
+    this._transitions.add(t);
+  }
+  removeTransition(id: TransitionId): void {
+    this._transitions.remove(id);
+  }
+  getTransition(id: TransitionId): ITransition | undefined {
+    return this._transitions.get(id);
+  }
+  getTransitionCount(): number {
+    return this._transitions.count();
+  }
+  getTransitionIds(): ReadonlyArray<TransitionId> {
+    return this._transitions.ids();
+  }
 
-  validate(): void { this._validator.validate(this._states, this._transitions); }
+  validate(): void {
+    this._validator.validate(this._states, this._transitions);
+  }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   start(): void {
-    const initials = this._states.all().filter(s => s.type === StateType.Initial);
+    const initials = this._states.all().filter((s) => s.type === StateType.Initial);
     if (initials.length === 0) {
       throw new SMRuntimeException('No Initial state found — call createInitial() before start()');
     }
 
-    this.onSMStarted.emit({ statemachineId: this.id, payload: undefined });
+    this.onStateMachineStarted.emit({ statemachineId: this.id, payload: undefined });
 
     for (const init of initials) {
       const initState = init as InitialState;
@@ -141,7 +171,11 @@ export class BasicStateMachine implements IStateMachine {
       if (s) s.stateStatus = StateStatus.Canceled;
     }
     this._active.clear();
-    this.onSMStopped.emit({ statemachineId: this.id, stateStatus: StateStatus.Canceled, payload: undefined });
+    this.onStateMachineStopped.emit({
+      statemachineId: this.id,
+      stateStatus: StateStatus.Canceled,
+      payload: undefined,
+    });
   }
 
   onStopped(id: StateId, status: StateStatus, exitCode?: string, payload?: unknown): void {
@@ -150,7 +184,9 @@ export class BasicStateMachine implements IStateMachine {
       throw new SMRuntimeException(`onStopped: state '${id}' not found`);
     }
     if (state.stateStatus !== StateStatus.Active) {
-      throw new SMRuntimeException(`onStopped: state '${id}' is not Active (status: ${state.stateStatus})`);
+      throw new SMRuntimeException(
+        `onStopped: state '${id}' is not Active (status: ${state.stateStatus})`,
+      );
     }
 
     state.stateStatus = status;
@@ -175,7 +211,11 @@ export class BasicStateMachine implements IStateMachine {
         throw new SMRuntimeException(`No outgoing transition from state '${fromId}'`);
 
       case 'noMatch':
-        this.onSMStopped.emit({ statemachineId: this.id, stateStatus: StateStatus.Error, payload: undefined });
+        this.onStateMachineStopped.emit({
+          statemachineId: this.id,
+          stateStatus: StateStatus.Error,
+          payload: undefined,
+        });
         break;
 
       case 'terminal': {
@@ -186,7 +226,11 @@ export class BasicStateMachine implements IStateMachine {
           this.onStateStopped.emit({ stateId: group.id, stateStatus: status, exitCode, payload });
           this._routeFromState(group.id, status, exitCode, payload);
         } else {
-          this.onSMStopped.emit({ statemachineId: this.id, stateStatus: status, payload });
+          this.onStateMachineStopped.emit({
+            statemachineId: this.id,
+            stateStatus: status,
+            payload,
+          });
         }
         break;
       }
@@ -253,11 +297,7 @@ export class BasicStateMachine implements IStateMachine {
     this.onStateStart.emit({ fromStateId: fromId, transitionId, toStateId: toId, payload });
   }
 
-  private _handleFork(
-    transitionIds: TransitionId[],
-    _fork: IState,
-    payload: unknown,
-  ): void {
+  private _handleFork(transitionIds: TransitionId[], _fork: IState, payload: unknown): void {
     const events: StateStartEvent[] = [];
     for (const tId of transitionIds) {
       const t = this._transitions.get(tId);
@@ -270,13 +310,18 @@ export class BasicStateMachine implements IStateMachine {
         : payload;
       target.stateStatus = StateStatus.Active;
       this._active.add(t.toStateId);
-      events.push({ fromStateId: t.fromStateId, transitionId: tId, toStateId: t.toStateId, payload: clonedPayload });
+      events.push({
+        fromStateId: t.fromStateId,
+        transitionId: tId,
+        toStateId: t.toStateId,
+        payload: clonedPayload,
+      });
     }
     this.onStateStart.emit(events);
   }
 
   private _startGroup(group: GroupState, payload: unknown): void {
-    const initId = Array.from(group.memberIds).find(id => {
+    const initId = Array.from(group.memberIds).find((id) => {
       return this._states.get(id)?.type === StateType.Initial;
     });
     if (!initId) throw new SMRuntimeException(`Group '${group.id}' has no Initial member state`);

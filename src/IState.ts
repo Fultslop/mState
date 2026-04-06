@@ -7,7 +7,7 @@ export enum StateStatus {
   Error = 'error',
   Canceled = 'canceled',
   Exception = 'exception',
-  AnyStatus = 'any'
+  AnyStatus = 'any',
 }
 
 export enum StateType {
@@ -17,7 +17,7 @@ export enum StateType {
   Fork = 'fork',
   Join = 'join',
   Group = 'group',
-  UserDefined = 'userDefined'
+  UserDefined = 'userDefined',
 }
 
 export interface IState {
@@ -28,4 +28,3 @@ export interface IState {
   readonly incoming: Set<TransitionId>;
   readonly outgoing: Set<TransitionId>;
 }
-

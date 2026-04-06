@@ -110,7 +110,7 @@ describe('StateMachine.start()', () => {
   it('emits onSMStarted then onStateStart for first real state', () => {
     const { sm } = makeMinimalSM();
     const events: string[] = [];
-    sm.onSMStarted.add(e => events.push(`started:${e.statemachineId}`));
+    sm.onStateMachineStarted.add(e => events.push(`started:${e.statemachineId}`));
     sm.onStateStart.add(e => {
       const evt = Array.isArray(e) ? e[0]! : e;
       events.push(`stateStart:${evt.toStateId}`);
@@ -145,7 +145,7 @@ describe('StateMachine.onStopped()', () => {
     const { sm } = makeMinimalSM();
     const events: string[] = [];
     sm.onStateStopped.add(e => events.push(`stopped:${e.stateId}`));
-    sm.onSMStopped.add(e => events.push(`smStopped:${e.stateStatus}`));
+    sm.onStateMachineStopped.add(e => events.push(`smStopped:${e.stateStatus}`));
     sm.start();
     sm.onStopped(sid('s1'), StateStatus.Ok);
     expect(events).toEqual(['stopped:s1', 'smStopped:ok']);
@@ -184,7 +184,7 @@ describe('StateMachine.onStopped()', () => {
 
     sm.start();
     const smStopped: StateMachineStoppedEvent[] = [];
-    sm.onSMStopped.add(e => smStopped.push(e));
+    sm.onStateMachineStopped.add(e => smStopped.push(e));
     sm.onStopped(sid('s1'), StateStatus.Error); // doesn't match Ok
     expect(smStopped[0]?.stateStatus).toBe(StateStatus.Error);
   });
@@ -264,7 +264,7 @@ describe('StateMachine.stop()', () => {
     expect(sm.getActiveStateIds()).toContain(sid('s1'));
 
     const events: StateMachineStoppedEvent[] = [];
-    sm.onSMStopped.add(e => events.push(e));
+    sm.onStateMachineStopped.add(e => events.push(e));
     sm.stop();
 
     expect(events[0]?.stateStatus).toBe(StateStatus.Canceled);

@@ -36,7 +36,7 @@ describe('spec 004 — transition narrowing', () => {
     const sm = build();
     sm.start();
     const smStopped: StateStatus[] = [];
-    sm.onSMStopped.add(e => smStopped.push(e.stateStatus));
+    sm.onStateMachineStopped.add(e => smStopped.push(e.stateStatus));
     sm.onStopped(sid('loadConfig'), StateStatus.Error);
     expect(smStopped[0]).toBe(StateStatus.Error);
   });

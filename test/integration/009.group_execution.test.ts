@@ -91,7 +91,7 @@ describe('spec 009 — group execution', () => {
       started.push(String(evt.toStateId));
     });
     const smStops: StateStatus[] = [];
-    sm.onSMStopped.add(e => smStops.push(e.stateStatus));
+    sm.onStateMachineStopped.add(e => smStops.push(e.stateStatus));
     sm.onStopped(sid('step1'), StateStatus.Error);
     // step1 has narrowed Ok transition to step2; Error causes noMatch → SMStopped with Error
     // OR the group exits with Error → groupChoice → logError branch

@@ -1,5 +1,5 @@
-import type { StateId} from '../types';
-import { StateType } from "@src/IState";
+import type { StateId } from '../types';
+import { StateType } from '@src/IState';
 import type { IGroupState } from '@src/IGroupState';
 import type { IState } from '@src/IState';
 import { BaseState } from './BaseState';

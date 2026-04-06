@@ -22,8 +22,8 @@ function extractBlocks(markdown: string): ExtractedBlock[] {
 }
 
 function parseDiagrams(content: string): IStateMachine[] {
-  const blocks   = extractBlocks(content);
-  const parser   = new MermaidParser();
+  const blocks = extractBlocks(content);
+  const parser = new MermaidParser();
   const cfgParse = new ConfigParser();
   const machines: IStateMachine[] = [];
 
@@ -62,14 +62,14 @@ export function createStateModel(
   options?: { fromFile: true },
 ): IStateMachine[] | Promise<IStateMachine[]> {
   if (options?.fromFile) {
-    return fs.promises.readFile(input, 'utf8').then(content => {
+    return fs.promises.readFile(input, 'utf8').then((content) => {
       return parseDiagrams(content);
     });
   }
 
   // Inline string — could be a raw diagram or a markdown document with fenced blocks
   const blocks = extractBlocks(input);
-  if (blocks.some(b => b.lang === 'mermaid')) {
+  if (blocks.some((b) => b.lang === 'mermaid')) {
     return parseDiagrams(input);
   }
 

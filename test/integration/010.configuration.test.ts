@@ -46,7 +46,7 @@ describe('spec 010 — configuration', () => {
     sm.createTransition(tid('t1'), exec.id, term.id);
 
     const smStops: StateStatus[] = [];
-    sm.onSMStopped.add(e => smStops.push(e.stateStatus));
+    sm.onStateMachineStopped.add(e => smStops.push(e.stateStatus));
     sm.start();
     sm.onStopped(sid('execute'), StateStatus.Ok);
     expect(smStops[0]).toBe(StateStatus.Ok);

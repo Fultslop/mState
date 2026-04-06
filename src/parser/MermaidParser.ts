@@ -1,17 +1,17 @@
 import type { StateMachineId, StateId, TransitionId } from '../types';
 import type { IGroupState } from '@src/IGroupState';
-import { StateStatus } from "@src/IState";
+import { StateStatus } from '@src/IState';
 import type { IStateMachine } from '@src/IStateMachine';
 import { SMValidationException } from '../exceptions';
 import { BasicStateMachine } from '../BasicStateMachine';
 import { extractTitle, tokenize } from './tokenizer';
 
 const STATUS_MAP: Record<string, StateStatus> = {
-  ok:        StateStatus.Ok,
-  error:     StateStatus.Error,
-  canceled:  StateStatus.Canceled,
+  ok: StateStatus.Ok,
+  error: StateStatus.Error,
+  canceled: StateStatus.Canceled,
   exception: StateStatus.Exception,
-  any:       StateStatus.AnyStatus,
+  any: StateStatus.AnyStatus,
 };
 
 let _counter = 0;
@@ -21,11 +21,11 @@ function nextId(prefix: string): string {
 
 export class MermaidParser {
   parse(diagramText: string): IStateMachine {
-    const title  = extractTitle(diagramText) || nextId('diagram');
+    const title = extractTitle(diagramText) || nextId('diagram');
     const tokens = tokenize(diagramText);
-    const sm     = new BasicStateMachine(title as StateMachineId);
+    const sm = new BasicStateMachine(title as StateMachineId);
 
-    const declared  = new Map<string, 'choice' | 'fork' | 'join'>();
+    const declared = new Map<string, 'choice' | 'fork' | 'join'>();
     const groupStack: string[] = [];
     const groupMembers = new Map<string, Set<string>>();
 
@@ -50,7 +50,7 @@ export class MermaidParser {
       } else if (tok.kind === 'transition' && currentGroup !== null) {
         const members = groupMembers.get(currentGroup)!;
         if (tok.from !== '[*]') members.add(tok.from);
-        if (tok.to   !== '[*]') members.add(tok.to);
+        if (tok.to !== '[*]') members.add(tok.to);
       }
     }
 
@@ -63,9 +63,18 @@ export class MermaidParser {
       if (ensured.has(id)) return;
       ensured.add(id);
       const type = declared.get(id);
-      if (type === 'choice') { sm.createChoice(id as StateId); return; }
-      if (type === 'fork')   { sm.createFork(id as StateId);   return; }
-      if (type === 'join')   { sm.createJoin(id as StateId);   return; }
+      if (type === 'choice') {
+        sm.createChoice(id as StateId);
+        return;
+      }
+      if (type === 'fork') {
+        sm.createFork(id as StateId);
+        return;
+      }
+      if (type === 'join') {
+        sm.createJoin(id as StateId);
+        return;
+      }
       if (groupMembers.has(id)) {
         sm.createGroup(id as StateId);
         for (const memberId of groupMembers.get(id)!) {
@@ -127,15 +136,11 @@ export class MermaidParser {
       }
       if (tok.kind !== 'transition') continue;
 
-      const fromId = tok.from === '[*]'
-        ? ensureInitial(currentGroup)
-        : tok.from;
-      const toId   = tok.to === '[*]'
-        ? ensureTerminal(currentGroup)
-        : tok.to;
+      const fromId = tok.from === '[*]' ? ensureInitial(currentGroup) : tok.from;
+      const toId = tok.to === '[*]' ? ensureTerminal(currentGroup) : tok.to;
 
       if (tok.from !== '[*]') ensureState(tok.from);
-      if (tok.to   !== '[*]') ensureState(tok.to);
+      if (tok.to !== '[*]') ensureState(tok.to);
 
       let status: StateStatus | undefined;
       let exitCode: string | undefined;
@@ -150,7 +155,9 @@ export class MermaidParser {
           }
         }
         if (parts.length > 2) {
-          throw new SMValidationException(`Malformed transition label '${tok.label}' — at most one '/' allowed`);
+          throw new SMValidationException(
+            `Malformed transition label '${tok.label}' — at most one '/' allowed`,
+          );
         }
         exitCode = parts[1]?.trim() || undefined;
       }

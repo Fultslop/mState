@@ -1,6 +1,11 @@
 export type {
-  StateMachineId as SMStateMachineId, StateId as SMStateId, TransitionId as SMTransitionId,
-  StateMachineStartedEvent as SMStartedEvent, StateStartEvent as SMStateStartEvent, StateStoppedEvent as SMStateStoppedEvent, StateMachineStoppedEvent as SMStoppedEvent,
+  StateMachineId as SMStateMachineId,
+  StateId as SMStateId,
+  TransitionId as SMTransitionId,
+  StateMachineStartedEvent as SMStartedEvent,
+  StateStartEvent as SMStateStartEvent,
+  StateStoppedEvent as SMStateStoppedEvent,
+  StateMachineStoppedEvent as SMStoppedEvent,
 } from './types';
 
 export type { StateStatus, StateType, IState } from './IState';

@@ -1,19 +1,26 @@
-import { IGroupState } from './IGroupState';
-import { IJoinState } from './IJoinState';
-import { IState } from './IState';
-import { ITransition } from './ITransition';
+import type { IGroupState } from './IGroupState';
+import type { IJoinState } from './IJoinState';
+import type { IState } from './IState';
+import type { ITransition } from './ITransition';
 import type { TypedEvent } from './TypedEvent';
-import type { StateMachineId, StateMachineStartedEvent, StateStartEvent, StateStoppedEvent, StateMachineStoppedEvent, StateId, TransitionId } from './types';
-import type { StateStatus } from "./IState";
-
+import type {
+  StateMachineId,
+  StateMachineStartedEvent,
+  StateStartEvent,
+  StateStoppedEvent,
+  StateMachineStoppedEvent,
+  StateId,
+  TransitionId,
+} from './types';
+import type { StateStatus } from './IState';
 
 export interface IStateMachine {
   readonly id: StateMachineId;
 
-  readonly onSMStarted: TypedEvent<StateMachineStartedEvent>;
+  readonly onStateMachineStarted: TypedEvent<StateMachineStartedEvent>;
   readonly onStateStart: TypedEvent<StateStartEvent | StateStartEvent[]>;
   readonly onStateStopped: TypedEvent<StateStoppedEvent>;
-  readonly onSMStopped: TypedEvent<StateMachineStoppedEvent>;
+  readonly onStateMachineStopped: TypedEvent<StateMachineStoppedEvent>;
 
   start(): void;
   stop(): void;
@@ -34,7 +41,7 @@ export interface IStateMachine {
     fromId: StateId,
     toId: StateId,
     status?: StateStatus,
-    exitCode?: string
+    exitCode?: string,
   ): ITransition;
 
   getState(id: StateId): IState | undefined;

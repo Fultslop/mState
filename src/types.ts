@@ -1,8 +1,8 @@
-import { StateStatus } from "./IState";
+import type { StateStatus } from './IState';
 
 export type StateMachineId = string & { readonly __brand: 'StateMachineId' };
-export type StateId        = string & { readonly __brand: 'StateId' };
-export type TransitionId   = string & { readonly __brand: 'TransitionId' };
+export type StateId = string & { readonly __brand: 'StateId' };
+export type TransitionId = string & { readonly __brand: 'TransitionId' };
 
 export interface StateMachineStartedEvent<T = unknown> {
   statemachineId: StateMachineId;

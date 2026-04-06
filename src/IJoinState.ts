@@ -1,6 +1,5 @@
-import { IState } from './IState';
+import type { IState } from './IState';
 import type { StateStartEvent } from './types';
-
 
 export interface IJoinState extends IState {
   readonly isComplete: boolean;

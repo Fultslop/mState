@@ -28,7 +28,7 @@ describe('spec 007 — payloads', () => {
       const evt = Array.isArray(e) ? e[0]! : e;
       startEvts.push(evt);
     });
-    sm.onSMStopped.add(e => smStoppedEvts.push(e));
+    sm.onStateMachineStopped.add(e => smStoppedEvts.push(e));
 
     sm.onStopped(sid('init'), StateStatus.Ok, undefined, [1, 2, 3]);
     expect(stoppedEvts[0]?.payload).toEqual([1, 2, 3]);

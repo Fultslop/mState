@@ -1,6 +1,6 @@
 import type { StateId, TransitionId } from '../types';
-import type { StateType } from "@src/IState";
-import { StateStatus } from "@src/IState";
+import type { StateType } from '@src/IState';
+import { StateStatus } from '@src/IState';
 import type { IState } from '@src/IState';
 
 export abstract class BaseState implements IState {

@@ -5,13 +5,13 @@ export type Token =
   | { kind: 'groupClose' }
   | { kind: 'direction' };
 
-const TRANSITION_RE  = /^(.+?)\s*-->\s*(.+?)(?:\s*:\s*(.*))?$/;
-const STATE_DECL_RE  = /^state\s+(\S+)\s+<<(\w+)>>$/;
-const GROUP_OPEN_RE  = /^state\s+(\S+)\s*\{$/;
+const TRANSITION_RE = /^(.+?)\s*-->\s*(.+?)(?:\s*:\s*(.*))?$/;
+const STATE_DECL_RE = /^state\s+(\S+)\s+<<(\w+)>>$/;
+const GROUP_OPEN_RE = /^state\s+(\S+)\s*\{$/;
 const GROUP_CLOSE_RE = /^\}$/;
-const DIRECTION_RE   = /^direction\s+\w+$/;
+const DIRECTION_RE = /^direction\s+\w+$/;
 const FRONTMATTER_RE = /^---[\s\S]*?---/m;
-const HEADER_RE      = /^\s*stateDiagram-v2\s*$/m;
+const HEADER_RE = /^\s*stateDiagram-v2\s*$/m;
 
 export function extractTitle(diagramText: string): string {
   const m = diagramText.match(/^---\s*\ntitle:\s*(.+?)\s*\n---/m);
@@ -19,9 +19,7 @@ export function extractTitle(diagramText: string): string {
 }
 
 export function tokenize(diagramText: string): Token[] {
-  const body = diagramText
-    .replace(FRONTMATTER_RE, '')
-    .replace(HEADER_RE, '');
+  const body = diagramText.replace(FRONTMATTER_RE, '').replace(HEADER_RE, '');
 
   const tokens: Token[] = [];
   for (const raw of body.split('\n')) {
@@ -51,8 +49,8 @@ export function tokenize(diagramText: string): Token[] {
     }
     const trans = TRANSITION_RE.exec(line);
     if (trans) {
-      const from  = trans[1]!.trim();
-      const to    = trans[2]!.trim();
+      const from = trans[1]!.trim();
+      const to = trans[2]!.trim();
       const label = trans[3]?.trim();
       tokens.push({ kind: 'transition', from, to, ...(label !== undefined ? { label } : {}) });
       continue;

@@ -22,13 +22,13 @@ describe('spec 002 — basic single state', () => {
     const sm = buildSM();
     const events: string[] = [];
 
-    sm.onSMStarted.add(e    => events.push(`onSMStarted:${e.statemachineId}`));
+    sm.onStateMachineStarted.add(e    => events.push(`onSMStarted:${e.statemachineId}`));
     sm.onStateStart.add(e   => {
       const evt = Array.isArray(e) ? e[0]! : e;
       events.push(`onStateStart:${evt.fromStateId}->${evt.toStateId}`);
     });
     sm.onStateStopped.add(e => events.push(`onStateStopped:${e.stateId}:${e.stateStatus}`));
-    sm.onSMStopped.add(e    => events.push(`onSMStopped:${e.stateStatus}`));
+    sm.onStateMachineStopped.add(e    => events.push(`onSMStopped:${e.stateStatus}`));
 
     sm.start();
     expect(events).toEqual([
@@ -58,7 +58,7 @@ describe('spec 002 — basic single state', () => {
   it('machine exits with Ok status matching the state completion', () => {
     const sm = buildSM();
     const stopped: StateStatus[] = [];
-    sm.onSMStopped.add(e => stopped.push(e.stateStatus));
+    sm.onStateMachineStopped.add(e => stopped.push(e.stateStatus));
     sm.start();
     sm.onStopped(sid('initialize'), StateStatus.Ok);
     expect(stopped[0]).toBe(StateStatus.Ok);

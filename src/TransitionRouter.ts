@@ -1,4 +1,4 @@
-import { StateType, StateStatus } from "./IState";
+import { StateType, StateStatus } from './IState';
 import type { StateId, TransitionId } from './types';
 import type { ITransition } from './ITransition';
 import type { IState } from './IState';
@@ -39,13 +39,13 @@ export class TransitionRouter {
 
   private _resolveOutgoing(state: IState, status: StateStatus, exitCode?: string): RouteResult {
     const outgoing = Array.from(state.outgoing)
-      .map(id => this._transitions.get(id))
+      .map((id) => this._transitions.get(id))
       .filter((t): t is ITransition => t !== undefined);
 
     if (outgoing.length === 0) return { kind: 'none' };
 
-    const hasQualified = outgoing.some(t => t.status !== undefined);
-    const matching = outgoing.filter(t => this._matches(t, status, exitCode));
+    const hasQualified = outgoing.some((t) => t.status !== undefined);
+    const matching = outgoing.filter((t) => this._matches(t, status, exitCode));
 
     if (matching.length === 0) {
       return hasQualified ? { kind: 'noMatch' } : { kind: 'none' };
@@ -72,13 +72,9 @@ export class TransitionRouter {
 
   private _matches(t: ITransition, status: StateStatus, exitCode?: string): boolean {
     const statusOk =
-      t.status === undefined ||
-      t.status === StateStatus.AnyStatus ||
-      t.status === status;
+      t.status === undefined || t.status === StateStatus.AnyStatus || t.status === status;
 
-    const exitCodeOk =
-      t.exitCode === undefined ||
-      t.exitCode === exitCode;
+    const exitCodeOk = t.exitCode === undefined || t.exitCode === exitCode;
 
     return statusOk && exitCodeOk;
   }

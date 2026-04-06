@@ -6,9 +6,9 @@ export interface StateConfig {
 }
 
 export interface DiagramConfig {
-  config:  Record<string, unknown> | undefined;
+  config: Record<string, unknown> | undefined;
   initial: Record<string, unknown> | undefined;
-  states:  Record<string, StateConfig>;
+  states: Record<string, StateConfig>;
 }
 
 export class ConfigParser {
@@ -30,7 +30,7 @@ export class ConfigParser {
     if (typeof entry !== 'object' || entry === null) return empty;
 
     const block = entry as Record<string, unknown>;
-    const config  = isRecord(block['config'])  ? block['config']  : undefined;
+    const config = isRecord(block['config']) ? block['config'] : undefined;
     const initial = isRecord(block['initial']) ? block['initial'] : undefined;
     const states: Record<string, StateConfig> = {};
 
