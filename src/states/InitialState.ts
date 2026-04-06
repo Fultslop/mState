@@ -1,5 +1,5 @@
-import type { StateId } from '../types';
-import { StateType } from '@src/IState';
+import type { StateId } from '../model/types';
+import { StateType } from '@src/model/State';
 import { BaseState } from './BaseState';
 
 export class InitialState extends BaseState {

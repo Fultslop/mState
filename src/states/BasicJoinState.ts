@@ -1,9 +1,9 @@
-import { StateType } from '@src/IState';
-import type { StateStartEvent, StateId, TransitionId } from '../types';
-import type { IJoinState } from '@src/IJoinState';
+import { StateType } from '@src/model/State';
+import type { StateStartEvent, StateId, TransitionId } from '../model/types';
+import type { JoinState } from '@src/model/JoinState';
 import { BaseState } from './BaseState';
 
-export class JoinState extends BaseState implements IJoinState {
+export class BasicJoinState extends BaseState implements JoinState {
   private readonly _received: Map<TransitionId, StateStartEvent> = new Map();
 
   constructor(id: StateId, parentId?: StateId) {

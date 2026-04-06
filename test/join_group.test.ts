@@ -1,8 +1,8 @@
-import { StateType } from "@src/IState";
-import type { StateId, TransitionId } from '@src/types';
-import type { StateStartEvent } from '@src/types';
-import { JoinState } from '@src/states/JoinState';
-import { GroupState } from '@src/states/GroupState';
+import { StateType } from '@src/model/State';
+import type { StateId, TransitionId } from '@src/model/types';
+import type { StateStartEvent } from '@src/model/types';
+import { BasicJoinState } from '@src/states/BasicJoinState';
+import { BasicGroupState } from '@src/states/BasicGroupState';
 import { UserDefinedState } from '@src/states/UserDefinedState';
 
 const sid = (s: string) => s as StateId;
@@ -10,18 +10,18 @@ const tid = (s: string) => s as TransitionId;
 
 describe('JoinState', () => {
   it('has type Join', () => {
-    expect(new JoinState(sid('j')).type).toBe(StateType.Join);
+    expect(new BasicJoinState(sid('j')).type).toBe(StateType.Join);
   });
 
   it('is not complete with no incoming dependencies met', () => {
-    const j = new JoinState(sid('j'));
+    const j = new BasicJoinState(sid('j'));
     j.incoming.add(tid('t1'));
     j.incoming.add(tid('t2'));
     expect(j.isComplete).toBe(false);
   });
 
   it('is complete when all incoming transitions have reported', () => {
-    const j = new JoinState(sid('j'));
+    const j = new BasicJoinState(sid('j'));
     j.incoming.add(tid('t1'));
     j.incoming.add(tid('t2'));
     const evt1: StateStartEvent = {
@@ -39,7 +39,7 @@ describe('JoinState', () => {
   });
 
   it('receivedPayloads returns the collected events', () => {
-    const j = new JoinState(sid('j'));
+    const j = new BasicJoinState(sid('j'));
     j.incoming.add(tid('t1'));
     const evt: StateStartEvent = {
       fromStateId: sid('a'), transitionId: tid('t1'),
@@ -51,7 +51,7 @@ describe('JoinState', () => {
   });
 
   it('reset clears received payloads', () => {
-    const j = new JoinState(sid('j'));
+    const j = new BasicJoinState(sid('j'));
     j.incoming.add(tid('t1'));
     const evt: StateStartEvent = {
       fromStateId: sid('a'), transitionId: tid('t1'),
@@ -66,11 +66,11 @@ describe('JoinState', () => {
 
 describe('GroupState', () => {
   it('has type Group', () => {
-    expect(new GroupState(sid('g')).type).toBe(StateType.Group);
+    expect(new BasicGroupState(sid('g')).type).toBe(StateType.Group);
   });
 
   it('tracks member states', () => {
-    const g = new GroupState(sid('g'));
+    const g = new BasicGroupState(sid('g'));
     const s = new UserDefinedState(sid('s1'));
     g.addState(s);
     expect(g.hasState(sid('s1'))).toBe(true);
@@ -79,7 +79,7 @@ describe('GroupState', () => {
   });
 
   it('stores config', () => {
-    const g = new GroupState(sid('g'), { timeout: 5000 });
+    const g = new BasicGroupState(sid('g'), { timeout: 5000 });
     expect(g.config).toEqual({ timeout: 5000 });
   });
 });

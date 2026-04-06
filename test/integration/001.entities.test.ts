@@ -1,10 +1,10 @@
 // src/__integration__/001.entities.test.ts
 // Verifies all entity types are constructable and branded IDs are distinct types.
-import { BasicStateMachine } from '../../src/BasicStateMachine';
-import { StateStatus, StateType } from "@src/IState";
-import type { StateMachineId, StateId, TransitionId } from '../../src/types';
-import { SMValidationException, SMRuntimeException } from '../../src/exceptions';
-import { StateMachineBuilder } from '@src/StateMachineBuilder';
+import { BasicStateMachine } from '../../src/base/BasicStateMachine';
+import { StateStatus, StateType } from "@src/model/State";
+import type { StateMachineId, StateId, TransitionId } from '../../src/model/types';
+import { SMValidationException, SMRuntimeException } from '../../src/base/exceptions';
+import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;

@@ -1,5 +1,5 @@
 import { MermaidParser } from '@src/parser/MermaidParser';
-import { StateType, StateStatus } from "@src/IState";
+import { StateType, StateStatus } from "@src/model/State";
 
 const SIMPLE = `
 ---

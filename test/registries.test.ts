@@ -1,9 +1,9 @@
-import { SMValidationException } from '@src/exceptions';
-import { StateRegistry } from '@src/StateRegistry';
-import { TransitionRegistry } from '@src/TransitionRegistry';
+import { SMValidationException } from '@src/base/exceptions';
+import { StateRegistry } from '@src/base/StateRegistry';
+import { TransitionRegistry } from '@src/base/TransitionRegistry';
 import { UserDefinedState } from '@src/states/UserDefinedState';
-import { Transition } from '@src/Transition';
-import type { StateId, TransitionId } from '@src/types';
+import type { StateId, TransitionId } from '@src/model/types';
+import { BasicTransition } from '@src/base/BasicTransition';
 
 const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;
@@ -62,20 +62,20 @@ describe('TransitionRegistry', () => {
   });
 
   it('adds and retrieves a transition', () => {
-    const t = new Transition(tid('t1'), sid('a'), sid('b'));
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('b'));
     reg.add(t);
     expect(reg.get(tid('t1'))).toBe(t);
     expect(reg.count()).toBe(1);
   });
 
   it('throws on duplicate id', () => {
-    reg.add(new Transition(tid('t1'), sid('a'), sid('b')));
-    expect(() => reg.add(new Transition(tid('t1'), sid('a'), sid('b'))))
+    reg.add(new BasicTransition(tid('t1'), sid('a'), sid('b')));
+    expect(() => reg.add(new BasicTransition(tid('t1'), sid('a'), sid('b'))))
       .toThrow(SMValidationException);
   });
 
   it('removes a transition', () => {
-    reg.add(new Transition(tid('t1'), sid('a'), sid('b')));
+    reg.add(new BasicTransition(tid('t1'), sid('a'), sid('b')));
     reg.remove(tid('t1'));
     expect(reg.get(tid('t1'))).toBeUndefined();
   });

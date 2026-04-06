@@ -1,5 +1,5 @@
-import { StateType, StateStatus } from "@src/IState";
-import type { StateId } from '@src/types';
+import { StateType, StateStatus } from "@src/model/State";
+import type { StateId } from '@src/model/types';
 import { InitialState } from '@src/states/InitialState';
 import { TerminalState } from '@src/states/TerminalState';
 import { UserDefinedState } from '@src/states/UserDefinedState';

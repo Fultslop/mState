@@ -1,4 +1,4 @@
-import type { StateStatus } from './IState';
+import type { StateStatus } from './State';
 
 export type StateMachineId = string & { readonly __brand: 'StateMachineId' };
 export type StateId = string & { readonly __brand: 'StateId' };

@@ -1,7 +1,7 @@
-import { BasicStateMachine } from '@src/BasicStateMachine';
-import { StateMachineBuilder } from '@src/StateMachineBuilder';
-import type { StateMachineId, StateId, TransitionId } from '@src/types';
-import type { IGroupState } from '@src/IGroupState';
+import { BasicStateMachine } from '@src/base/BasicStateMachine';
+import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
+import type { StateMachineId, StateId, TransitionId } from '@src/model/types';
+import type { GroupState } from '@src/model/GroupState';
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;
@@ -34,7 +34,7 @@ function makeGroupSM() {
   const sm        = new BasicStateMachine(smid('sm'));
   const builder   = new StateMachineBuilder(sm);
   const rootInit  = builder.createInitial(sid('rootInit'));
-  const group     = builder.createGroup(sid('group')) as IGroupState;
+  const group     = builder.createGroup(sid('group')) as GroupState;
   const groupInit = builder.createInitial(sid('groupInit'));
   const step1     = builder.createState(sid('step1'));
   const groupTerm = builder.createTerminal(sid('groupTerm'));

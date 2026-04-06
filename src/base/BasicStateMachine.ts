@@ -6,30 +6,24 @@ import type {
   StateStartEvent,
   StateStoppedEvent,
   StateMachineStoppedEvent,
-} from './types';
-import { StateStatus, StateType } from './IState';
-import type { IStateMachine } from './IStateMachine';
-import type { IGroupState } from './IGroupState';
-import type { IJoinState } from './IJoinState';
-import type { ITransition } from './ITransition';
-import type { IState } from './IState';
-import { TypedEvent } from './TypedEvent';
+} from '../model/types';
+import { StateStatus, StateType } from '../model/State';
+import type { StateMachine } from '../model/StateMachine';
+import type { State } from '../model/State';
+import { TypedEvent } from '../common/TypedEvent';
 import { StateRegistry } from './StateRegistry';
 import { TransitionRegistry } from './TransitionRegistry';
 import { TransitionRouter } from './TransitionRouter';
 import { Validator } from './Validator';
-import { Transition } from './Transition';
 import { SMRuntimeException } from './exceptions';
-import { InitialState } from './states/InitialState';
-import { TerminalState } from './states/TerminalState';
-import { UserDefinedState } from './states/UserDefinedState';
-import { ChoiceState } from './states/ChoiceState';
-import { ForkState } from './states/ForkState';
-import { JoinState } from './states/JoinState';
-import { GroupState } from './states/GroupState';
-import { requiresTruthy } from './core/requires';
+import type { InitialState } from '../states/InitialState';
+import type { ForkState } from '../states/ForkState';
+import { requiresTruthy } from '../common/requires';
+import type { Transition } from '../model/Transition';
+import type { GroupState } from '../model/GroupState';
+import type { JoinState } from '../model/JoinState';
 
-export class BasicStateMachine implements IStateMachine {
+export class BasicStateMachine implements StateMachine {
   readonly id: StateMachineId;
   readonly onStateMachineStarted = new TypedEvent<StateMachineStartedEvent>();
   readonly onStateStart = new TypedEvent<StateStartEvent | StateStartEvent[]>();
@@ -49,7 +43,7 @@ export class BasicStateMachine implements IStateMachine {
 
   // ── Registry access ───────────────────────────────────────────────────────
 
-  addState(state: IState): void {
+  addState(state: State): void {
     this._states.add(state);
   }
 
@@ -60,7 +54,7 @@ export class BasicStateMachine implements IStateMachine {
     // For a GroupState, recursively delete all children first so their
     // own transitions are cleaned up before we process the group's own edges.
     if (state.type === StateType.Group) {
-      const group = state as IGroupState;
+      const group = state as GroupState;
       for (const childId of [...group.stateIds]) {
         this.deleteState(childId);
       }
@@ -80,7 +74,7 @@ export class BasicStateMachine implements IStateMachine {
     if (state.parentId) {
       const parent = this._states.get(state.parentId);
       if (parent?.type === StateType.Group) {
-        (parent as IGroupState).deleteState(id);
+        (parent as GroupState).deleteState(id);
       }
     }
 
@@ -88,7 +82,7 @@ export class BasicStateMachine implements IStateMachine {
     this._states.remove(id);
   }
 
-  getState(id: StateId): IState | undefined {
+  getState(id: StateId): State | undefined {
     return this._states.get(id);
   }
 
@@ -104,7 +98,7 @@ export class BasicStateMachine implements IStateMachine {
     return Array.from(this._active);
   }
 
-  addTransition(t: ITransition): void {
+  addTransition(t: Transition): void {
     this._transitions.add(t);
   }
 
@@ -122,14 +116,14 @@ export class BasicStateMachine implements IStateMachine {
     if (t.parentId) {
       const parent = this._states.get(t.parentId);
       if (parent?.type === StateType.Group) {
-        (parent as IGroupState).deleteTransition(id);
+        (parent as GroupState).deleteTransition(id);
       }
     }
 
     this._transitions.remove(id);
   }
 
-  getTransition(id: TransitionId): ITransition | undefined {
+  getTransition(id: TransitionId): Transition | undefined {
     return this._transitions.get(id);
   }
 
@@ -293,7 +287,7 @@ export class BasicStateMachine implements IStateMachine {
     this.onStateStart.emit({ fromStateId: fromId, transitionId, toStateId: toId, payload });
   }
 
-  private _handleFork(transitionIds: TransitionId[], _fork: IState, payload: unknown): void {
+  private _handleFork(transitionIds: TransitionId[], _fork: State, payload: unknown): void {
     const events: StateStartEvent[] = [];
     for (const tId of transitionIds) {
       const t = this._transitions.get(tId);

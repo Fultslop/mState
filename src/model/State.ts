@@ -1,4 +1,3 @@
-import { State } from 'js-yaml';
 import type { StateId, TransitionId } from './types';
 
 export enum StateStatus {
@@ -21,7 +20,7 @@ export enum StateType {
   UserDefined = 'userDefined',
 }
 
-export interface IState {
+export interface State {
   readonly id: StateId;
   readonly type: StateType; 
   readonly config: Record<string, unknown> | undefined;

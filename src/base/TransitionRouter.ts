@@ -1,7 +1,7 @@
-import { StateType, StateStatus } from './IState';
-import type { StateId, TransitionId } from './types';
-import type { ITransition } from './ITransition';
-import type { IState } from './IState';
+import { StateType, StateStatus } from '../model/State';
+import type { StateId, TransitionId } from '../model/types';
+import type { Transition } from '../model/Transition';
+import type { State } from '../model/State';
 import type { StateRegistry } from './StateRegistry';
 import type { TransitionRegistry } from './TransitionRegistry';
 import { SMRuntimeException } from './exceptions';
@@ -31,16 +31,16 @@ export class TransitionRouter {
     return this._resolveOutgoing(state, status, exitCode);
   }
 
-  private _resolveFork(state: IState): RouteResult {
+  private _resolveFork(state: State): RouteResult {
     const ids = Array.from(state.outgoing);
     if (ids.length === 0) return { kind: 'none' };
     return { kind: 'transition', transitionIds: ids };
   }
 
-  private _resolveOutgoing(state: IState, status: StateStatus, exitCode?: string): RouteResult {
+  private _resolveOutgoing(state: State, status: StateStatus, exitCode?: string): RouteResult {
     const outgoing = Array.from(state.outgoing)
       .map((id) => this._transitions.get(id))
-      .filter((t): t is ITransition => t !== undefined);
+      .filter((t): t is Transition => t !== undefined);
 
     if (outgoing.length === 0) return { kind: 'none' };
 
@@ -70,7 +70,7 @@ export class TransitionRouter {
     return { kind: 'transition', transitionIds: [first.id] };
   }
 
-  private _matches(t: ITransition, status: StateStatus, exitCode?: string): boolean {
+  private _matches(t: Transition, status: StateStatus, exitCode?: string): boolean {
     const statusOk =
       t.status === undefined || t.status === StateStatus.AnyStatus || t.status === status;
 

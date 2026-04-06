@@ -1,7 +1,7 @@
 import type { TransitionId, StateId } from './types';
-import type { StateStatus } from './IState';
+import type { StateStatus } from './State';
 
-export interface ITransition {
+export interface Transition {
   readonly id: TransitionId;
   readonly fromStateId: StateId;
   readonly toStateId: StateId;

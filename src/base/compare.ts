@@ -1,6 +1,6 @@
-import type { IState } from './IState';
-import type { ITransition } from './ITransition';
-import type { IStateMachine } from './IStateMachine';
+import type { State } from '../model/State';
+import type { Transition } from '../model/Transition';
+import type { StateMachine } from '../model/StateMachine';
 
 function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
   if (a.size !== b.size) return false;
@@ -24,7 +24,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
 }
 
-export function compareStates(a: IState, b: IState): boolean {
+export function compareStates(a: State, b: State): boolean {
   return (
     a.id === b.id &&
     a.type === b.type &&
@@ -35,7 +35,7 @@ export function compareStates(a: IState, b: IState): boolean {
   );
 }
 
-export function compareTransitions(a: ITransition, b: ITransition): boolean {
+export function compareTransitions(a: Transition, b: Transition): boolean {
   return (
     a.id === b.id &&
     a.fromStateId === b.fromStateId &&
@@ -46,7 +46,7 @@ export function compareTransitions(a: ITransition, b: ITransition): boolean {
   );
 }
 
-export function compareStateMachines(a: IStateMachine, b: IStateMachine): boolean {
+export function compareStateMachines(a: StateMachine, b: StateMachine): boolean {
   if (a.getStateCount() !== b.getStateCount()) return false;
   if (a.getTransitionCount() !== b.getTransitionCount()) return false;
 

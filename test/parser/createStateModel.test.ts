@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { createStateModel } from '@src/parser/createStateModel';
-import { StateType } from "@src/IState";
+import { StateType } from "@src/model/State";
 
 const INLINE = `
 ---

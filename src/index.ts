@@ -6,15 +6,15 @@ export type {
   StateStartEvent as SMStateStartEvent,
   StateStoppedEvent as SMStateStoppedEvent,
   StateMachineStoppedEvent as SMStoppedEvent,
-} from './types';
+} from './model/types';
 
-export type { StateStatus, StateType, IState } from './IState';
-export type { ITransition as ISMTransition } from './ITransition';
-export type { IStateMachine as ISMStateMachine } from './IStateMachine';
-export type { IJoinState } from './IJoinState';
-export type { IGroupState } from './IGroupState';
+export type { StateStatus, StateType, State as IState } from './model/State';
+export type { Transition as ISMTransition } from './model/Transition';
+export type { StateMachine as ISMStateMachine } from './model/StateMachine';
+export type { JoinState as IJoinState } from './model/JoinState';
+export type { GroupState as IGroupState } from './model/GroupState';
 
-export { SMValidationException, SMRuntimeException } from './exceptions';
-export { BasicStateMachine as StateMachine } from './BasicStateMachine';
+export { SMValidationException, SMRuntimeException } from './base/exceptions';
+export { BasicStateMachine as StateMachine } from './base/BasicStateMachine';
 export { createStateModel } from './parser/createStateModel';
-export { compareStates, compareTransitions, compareStateMachines } from './compare';
+export { compareStates, compareTransitions, compareStateMachines } from './base/compare';

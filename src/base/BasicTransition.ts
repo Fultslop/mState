@@ -1,8 +1,8 @@
-import type { StateId, TransitionId } from './types';
-import type { StateStatus } from './IState';
-import type { ITransition } from './ITransition';
+import type { StateId, TransitionId } from '../model/types';
+import type { StateStatus } from '../model/State';
+import type { Transition } from '../model/Transition';
 
-export class Transition implements ITransition {
+export class BasicTransition implements Transition {
   readonly id: TransitionId;
   readonly fromStateId: StateId;
   readonly toStateId: StateId;

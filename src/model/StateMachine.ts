@@ -1,8 +1,8 @@
-import type { IGroupState } from './IGroupState';
-import type { IJoinState } from './IJoinState';
-import type { IState } from './IState';
-import type { ITransition } from './ITransition';
-import type { TypedEvent } from './TypedEvent';
+import type { TypedEvent } from '@src/common/TypedEvent';
+
+import type { StateStatus, State } from './State';
+import type { Transition } from './Transition';
+
 import type {
   StateMachineId,
   StateMachineStartedEvent,
@@ -12,9 +12,8 @@ import type {
   StateId,
   TransitionId,
 } from './types';
-import type { StateStatus } from './IState';
 
-export interface IStateMachine {
+export interface StateMachine {
   readonly id: StateMachineId;
 
   readonly onStateMachineStarted: TypedEvent<StateMachineStartedEvent>;
@@ -28,18 +27,18 @@ export interface IStateMachine {
 
   onStopped(id: StateId, status: StateStatus, exitCode?: string, payload?: unknown): void;
   
-  getState(id: StateId): IState | undefined;
+  getState(id: StateId): State | undefined;
   getStateCount(): number;
   getStateIds(): ReadonlyArray<StateId>;
   getActiveStateIds(): ReadonlyArray<StateId>;
 
-  getTransition(id: TransitionId): ITransition | undefined;
+  getTransition(id: TransitionId): Transition | undefined;
   getTransitionCount(): number;
   getTransitionIds(): ReadonlyArray<TransitionId>;
 
-  addState(state: IState): void;
+  addState(state: State): void;
   deleteState(id: StateId): void;
   
-  addTransition(transition: ITransition): void;
+  addTransition(transition: Transition): void;
   deleteTransition(id: TransitionId): void;
 }

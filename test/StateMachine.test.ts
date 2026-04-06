@@ -1,9 +1,9 @@
-import { StateType, StateStatus } from "@src/IState";
-import type { StateMachineId, StateId, TransitionId, StateMachineStoppedEvent, StateStartEvent } from '@src/types';
-import { BasicStateMachine } from '@src/BasicStateMachine';
-import { SMValidationException, SMRuntimeException } from '@src/exceptions';
+import { StateType, StateStatus } from "@src/model/State";
+import type { StateMachineId, StateId, TransitionId, StateMachineStoppedEvent, StateStartEvent } from '@src/model/types';
+import { BasicStateMachine } from '@src/base/BasicStateMachine';
+import { SMValidationException, SMRuntimeException } from '@src/base/exceptions';
 import { StateMachine } from "@src/index";
-import { StateMachineBuilder } from "@src/StateMachineBuilder";
+import { StateMachineBuilder } from "@src/base/StateMachineBuilder";
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;

@@ -1,11 +1,11 @@
-import type { StateId, TransitionId } from '../types';
-import { StateType } from '@src/IState';
-import type { IGroupState } from '@src/IGroupState';
-import type { IState } from '@src/IState';
+import type { StateId, TransitionId } from '../model/types';
+import { StateType } from '@src/model/State';
+import type { GroupState } from '@src/model/GroupState';
+import type { State } from '@src/model/State';
 import { BaseState } from './BaseState';
-import { ITransition } from '@src/ITransition';
+import type { Transition } from '@src/model/Transition';
 
-export class GroupState extends BaseState implements IGroupState {
+export class BasicGroupState extends BaseState implements GroupState {
   readonly stateIds: Set<StateId> = new Set();
   readonly transitionIds: Set<TransitionId> = new Set();
 
@@ -13,7 +13,7 @@ export class GroupState extends BaseState implements IGroupState {
     super(id, StateType.Group, config, parentId);
   }
 
-  addState(state: IState): void {
+  addState(state: State): void {
     this.stateIds.add(state.id);
     state.parentId = this.id;
   }
@@ -26,7 +26,7 @@ export class GroupState extends BaseState implements IGroupState {
     this.stateIds.delete(stateId);
   }
 
-  addTransition(transition: ITransition): void {
+  addTransition(transition: Transition): void {
     this.transitionIds.add(transition.id);
     transition.parentId = this.id;
   }

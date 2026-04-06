@@ -1,26 +1,26 @@
 import { BasicStateMachine } from './BasicStateMachine';
 import { SMRuntimeException } from './exceptions';
-import type { IGroupState } from './IGroupState';
-import type { IJoinState } from './IJoinState';
-import type { IState, StateStatus, StateType } from './IState';
-import type { IStateMachine } from './IStateMachine';
-import type { ITransition } from './ITransition';
-import { ChoiceState } from './states/ChoiceState';
-import { ForkState } from './states/ForkState';
-import { GroupState } from './states/GroupState';
-import { InitialState } from './states/InitialState';
-import { JoinState } from './states/JoinState';
-import { TerminalState } from './states/TerminalState';
-import { UserDefinedState } from './states/UserDefinedState';
-import { Transition } from './Transition';
-import type { StateId, StateMachineId, TransitionId } from './types';
+import type { State, StateStatus } from '../model/State';
+import type { StateMachine } from '../model/StateMachine';
+import { ChoiceState } from '../states/ChoiceState';
+import { ForkState } from '../states/ForkState';
+import { BasicGroupState } from '../states/BasicGroupState';
+import { InitialState } from '../states/InitialState';
+import { BasicJoinState } from '../states/BasicJoinState';
+import { TerminalState } from '../states/TerminalState';
+import { UserDefinedState } from '../states/UserDefinedState';
+import { BasicTransition } from './BasicTransition';
+import type { StateId, StateMachineId, TransitionId } from '../model/types';
+import type { Transition } from '../model/Transition';
+import type { JoinState } from '../model/JoinState';
+import type { GroupState } from '../model/GroupState';
 
 export class BuildSession {
     
-  private readonly _stateMachine: IStateMachine;
+  private readonly _stateMachine: StateMachine;
   private readonly _builder: StateMachineBuilder;
 
-  constructor(stateMachine?: IStateMachine) {
+  constructor(stateMachine?: StateMachine) {
     this._stateMachine = stateMachine || new BasicStateMachine(`stateMachine#${crypto.randomUUID()}` as StateMachineId );
     this._builder = new StateMachineBuilder(this._stateMachine)
     return this;
@@ -33,50 +33,50 @@ export class BuildSession {
 }
 
 export class StateMachineBuilder {
-  constructor(private readonly _stateMachine: IStateMachine) {}
+  constructor(private readonly _stateMachine: StateMachine) {}
 
-  get stateMachine(): IStateMachine {
+  get stateMachine(): StateMachine {
     return this._stateMachine;
   }
 
-  createInitial(id: StateId, payload?: unknown, parent?: StateId): IState {
+  createInitial(id: StateId, payload?: unknown, parent?: StateId): State {
     const s = new InitialState(id, payload, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createState(id: StateId, config?: Record<string, unknown>, parent?: StateId): IState {
+  createState(id: StateId, config?: Record<string, unknown>, parent?: StateId): State {
     const s = new UserDefinedState(id, config, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createTerminal(id: StateId, parent?: StateId): IState {
+  createTerminal(id: StateId, parent?: StateId): State {
     const s = new TerminalState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createChoice(id: StateId, parent?: StateId): IState {
+  createChoice(id: StateId, parent?: StateId): State {
     const s = new ChoiceState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createFork(id: StateId, clonePayload?: (p: unknown) => unknown, parent?: StateId): IState {
+  createFork(id: StateId, clonePayload?: (p: unknown) => unknown, parent?: StateId): State {
     const s = new ForkState(id, clonePayload, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createJoin(id: StateId, parent?: StateId): IJoinState {
-    const s = new JoinState(id, parent);
+  createJoin(id: StateId, parent?: StateId): JoinState {
+    const s = new BasicJoinState(id, parent);
     this._stateMachine.addState(s);
     return s;
   }
 
-  createGroup(id: StateId, config?: Record<string, unknown>, parent?: StateId): IGroupState {
-    const s = new GroupState(id, config, parent);
+  createGroup(id: StateId, config?: Record<string, unknown>, parent?: StateId): GroupState {
+    const s = new BasicGroupState(id, config, parent);
     this._stateMachine.addState(s);
     return s;
   }
@@ -88,8 +88,8 @@ export class StateMachineBuilder {
     status?: StateStatus,
     exitCode?: string,
     parent?: StateId
-  ): ITransition {
-    const t = new Transition(id, fromId, toId, status, exitCode, parent);
+  ): Transition {
+    const t = new BasicTransition(id, fromId, toId, status, exitCode, parent);
     this._stateMachine.addTransition(t);
     const from = this._stateMachine.getState(fromId);
     

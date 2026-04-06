@@ -1,11 +1,11 @@
-import type { StateMachineId, StateId, TransitionId } from '../types';
-import type { IGroupState } from '@src/IGroupState';
-import { StateStatus } from '@src/IState';
-import type { IStateMachine } from '@src/IStateMachine';
-import { SMValidationException } from '../exceptions';
-import { BasicStateMachine } from '../BasicStateMachine';
+import type { StateMachineId, StateId, TransitionId } from '../model/types';
+import type { GroupState } from '@src/model/GroupState';
+import { StateStatus } from '@src/model/State';
+import type { StateMachine } from '@src/model/StateMachine';
+import { SMValidationException } from '../base/exceptions';
+import { BasicStateMachine } from '../base/BasicStateMachine';
 import { extractTitle, tokenize } from './tokenizer';
-import { StateMachineBuilder } from '@src/StateMachineBuilder';
+import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
 
 const STATUS_MAP: Record<string, StateStatus> = {
   ok: StateStatus.Ok,
@@ -16,7 +16,7 @@ const STATUS_MAP: Record<string, StateStatus> = {
 };
 
 export class MermaidParser {
-  parse(diagramText: string): IStateMachine {
+  parse(diagramText: string): StateMachine {
     const title = extractTitle(diagramText) || crypto.randomUUID();
     const tokens = tokenize(diagramText);
     const sm = new BasicStateMachine(title as StateMachineId);
@@ -78,7 +78,7 @@ export class MermaidParser {
           ensureState(memberId);
           const gs = sm.getState(id as StateId);
           const ms = sm.getState(memberId as StateId);
-          if (gs && ms) (gs as IGroupState).addState(ms);
+          if (gs && ms) (gs as GroupState).addState(ms);
         }
         return;
       }
@@ -91,7 +91,7 @@ export class MermaidParser {
       const id = context ? `${context}__initial` : 'initial';
       builder.createInitial(id as StateId);
       if (context) {
-        const gs = sm.getState(context as StateId) as IGroupState;
+        const gs = sm.getState(context as StateId) as GroupState;
         const is = sm.getState(id as StateId)!;
         gs?.addState(is);
       }
@@ -105,7 +105,7 @@ export class MermaidParser {
       const id = context ? `${context}__terminal` : 'terminal';
       builder.createTerminal(id as StateId);
       if (context) {
-        const gs = sm.getState(context as StateId) as IGroupState;
+        const gs = sm.getState(context as StateId) as GroupState;
         const ts = sm.getState(id as StateId)!;
         gs?.addState(ts);
       }

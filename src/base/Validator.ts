@@ -1,11 +1,11 @@
-import { StateType, StateStatus } from './IState';
-import type { StateId } from './types';
-import type { ITransition } from './ITransition';
-import type { IState } from './IState';
+import { StateType, StateStatus } from '../model/State';
+import type { StateId } from '../model/types';
+import type { Transition } from '../model/Transition';
+import type { State } from '../model/State';
 import type { StateRegistry } from './StateRegistry';
 import type { TransitionRegistry } from './TransitionRegistry';
 import { SMValidationException } from './exceptions';
-import type { GroupState } from './states/GroupState';
+import type { GroupState } from '../model/GroupState';
 
 export class Validator {
   validate(states: StateRegistry, transitions: TransitionRegistry): void {
@@ -77,7 +77,7 @@ export class Validator {
       }
       const outgoing = Array.from(s.outgoing)
         .map((id) => transitions.get(id))
-        .filter((t): t is ITransition => t !== undefined);
+        .filter((t): t is Transition => t !== undefined);
       const seen = new Set<string>();
       let defaultCount = 0;
       for (const t of outgoing) {
@@ -134,7 +134,7 @@ export class Validator {
       const g = s as GroupState;
       const members = Array.from(g.stateIds)
         .map((id) => states.get(id))
-        .filter((m): m is IState => m !== undefined);
+        .filter((m): m is State => m !== undefined);
       const groupInitials = members.filter((m) => m.type === StateType.Initial);
       if (groupInitials.length !== 1) {
         throw new SMValidationException(

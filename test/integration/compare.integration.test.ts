@@ -3,12 +3,12 @@
 // For each integration scenario (002-009), verifies that the programmatically-built
 // state machine matches the equivalent machine parsed from a Mermaid diagram.
 //
-import { BasicStateMachine } from '../../src/BasicStateMachine';
-import { StateMachineBuilder } from '../../src/StateMachineBuilder';
+import { BasicStateMachine } from '../../src/base/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/base/StateMachineBuilder';
 import { MermaidParser } from '../../src/parser/MermaidParser';
-import { StateStatus } from '../../src/IState';
-import { compareStateMachines } from '../../src/compare';
-import type { StateMachineId, StateId, TransitionId } from '../../src/types';
+import { StateStatus } from '../../src/model/State';
+import { compareStateMachines } from '../../src/base/compare';
+import type { StateMachineId, StateId, TransitionId } from '../../src/model/types';
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;

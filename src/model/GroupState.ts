@@ -1,16 +1,16 @@
-import type { IState } from './IState';
-import { ITransition } from './ITransition';
+import type { State } from './State';
+import type { Transition } from './Transition';
 import type { StateId, TransitionId } from './types';
 
-export interface IGroupState extends IState {
+export interface GroupState extends State {
   readonly stateIds: Set<StateId>;
   readonly transitionIds: Set<TransitionId>;
   
   hasState(stateId: StateId): boolean;
-  addState(state: IState): void;
+  addState(state: State): void;
   deleteState(stateId: StateId): void;
 
   hasTransition(transitionId: TransitionId): boolean;
-  addTransition(transitionId: ITransition): void;
+  addTransition(transitionId: Transition): void;
   deleteTransition(transitionId: TransitionId): void;
 }

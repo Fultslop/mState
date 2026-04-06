@@ -1,11 +1,11 @@
-import type { TransitionId } from './types';
-import type { ITransition } from './ITransition';
+import type { TransitionId } from '../model/types';
+import type { Transition } from '../model/Transition';
 import { SMValidationException } from './exceptions';
 
 export class TransitionRegistry {
-  private readonly _transitions: Map<TransitionId, ITransition> = new Map();
+  private readonly _transitions: Map<TransitionId, Transition> = new Map();
 
-  add(transition: ITransition): void {
+  add(transition: Transition): void {
     if (this._transitions.has(transition.id)) {
       throw new SMValidationException(`Duplicate transition id: '${transition.id}'`);
     }
@@ -16,7 +16,7 @@ export class TransitionRegistry {
     this._transitions.delete(id);
   }
 
-  get(id: TransitionId): ITransition | undefined {
+  get(id: TransitionId): Transition | undefined {
     return this._transitions.get(id);
   }
 
@@ -28,7 +28,7 @@ export class TransitionRegistry {
     return Array.from(this._transitions.keys());
   }
 
-  all(): ReadonlyArray<ITransition> {
+  all(): ReadonlyArray<Transition> {
     return Array.from(this._transitions.values());
   }
 }

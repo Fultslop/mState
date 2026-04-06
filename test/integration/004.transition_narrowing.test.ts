@@ -1,8 +1,8 @@
 // src/__integration__/004.transition_narrowing.test.ts
-import { BasicStateMachine } from '../../src/BasicStateMachine';
-import { StateMachineBuilder } from '../../src/StateMachineBuilder';
-import { StateStatus } from "@src/IState";
-import type { StateMachineId, StateId, TransitionId } from '../../src/types';
+import { BasicStateMachine } from '../../src/base/BasicStateMachine';
+import { StateMachineBuilder } from '../../src/base/StateMachineBuilder';
+import { StateStatus } from "@src/model/State";
+import type { StateMachineId, StateId, TransitionId } from '../../src/model/types';
 
 const smid = (s: string) => s as StateMachineId;
 const sid  = (s: string) => s as StateId;

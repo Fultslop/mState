@@ -1,10 +1,10 @@
-import { BasicStateMachine } from '../src/BasicStateMachine';
-import { StateMachineBuilder } from '../src/StateMachineBuilder';
-import { StateStatus, StateType } from '../src/IState';
-import { UserDefinedState } from '../src/states/UserDefinedState';
-import { Transition } from '../src/Transition';
-import { compareStates, compareTransitions, compareStateMachines } from '../src/compare';
-import type { StateId, TransitionId, StateMachineId } from '../src/types';
+import { BasicStateMachine } from '@src/base/BasicStateMachine';
+import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
+import { StateStatus, StateType } from '@src/model/State';
+import { UserDefinedState } from '@src/states/UserDefinedState';
+import { compareStates, compareTransitions, compareStateMachines } from '@src/base/compare';
+import type { StateId, TransitionId, StateMachineId } from '@src/model/types';
+import { BasicTransition } from '@src/base/BasicTransition';
 
 const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;
@@ -116,7 +116,7 @@ describe('compareTransitions', () => {
     exitCode: string | undefined;
     parentId: string | undefined;
   }> = {}) {
-    return new Transition(
+    return new BasicTransition(
       tid(overrides.id ?? 't1'),
       sid(overrides.fromStateId ?? 'a'),
       sid(overrides.toStateId ?? 'b'),

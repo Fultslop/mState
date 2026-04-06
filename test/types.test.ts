@@ -1,4 +1,4 @@
-import { StateStatus, StateType } from "@src/IState";
+import { StateStatus, StateType } from "@src/model/State";
 
 describe('SMStatus', () => {
   it('has expected values', () => {

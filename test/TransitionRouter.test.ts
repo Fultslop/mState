@@ -1,12 +1,12 @@
-import { StateStatus } from "@src/IState";
-import type { StateId, TransitionId } from '@src/types';
-import type { ITransition } from '@src/ITransition';
-import type { IState } from '@src/IState';
-import { StateRegistry } from '@src/StateRegistry';
-import { TransitionRegistry } from '@src/TransitionRegistry';
-import { TransitionRouter } from '@src/TransitionRouter';
-import { SMRuntimeException } from '@src/exceptions';
-import { Transition } from '@src/Transition';
+import { StateStatus } from "@src/model/State";
+import type { StateId, TransitionId } from '@src/model/types';
+import type { Transition } from '@src/model/Transition';
+import type { State } from '@src/model/State';
+import { StateRegistry } from '@src/base/StateRegistry';
+import { TransitionRegistry } from '@src/base/TransitionRegistry';
+import { TransitionRouter } from '@src/base/TransitionRouter';
+import { SMRuntimeException } from '@src/base/exceptions';
+import { BasicTransition } from '@src/base/BasicTransition';
 import { TerminalState } from '@src/states/TerminalState';
 import { UserDefinedState } from '@src/states/UserDefinedState';
 import { ChoiceState } from '@src/states/ChoiceState';
@@ -16,8 +16,8 @@ const sid = (s: string) => s as StateId;
 const tid = (s: string) => s as TransitionId;
 
 function makeRouter(
-  states: Record<string, IState>,
-  transitions: ITransition[],
+  states: Record<string, State>,
+  transitions: Transition[],
 ) {
   const sr = new StateRegistry();
   const tr = new TransitionRegistry();
@@ -46,7 +46,7 @@ describe('TransitionRouter', () => {
   it('resolves an unqualified transition (matches any status)', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new Transition(tid('t1'), sid('a'), sid('b'));
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('b'));
     const router = makeRouter({ a, b }, [t]);
     const result = router.resolve(sid('a'), StateStatus.Error);
     expect(result).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
@@ -55,7 +55,7 @@ describe('TransitionRouter', () => {
   it('resolves a status-qualified transition when status matches', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
     const router = makeRouter({ a, b }, [t]);
     expect(router.resolve(sid('a'), StateStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
   });
@@ -63,7 +63,7 @@ describe('TransitionRouter', () => {
   it('returns noMatch when qualified transition does not match', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
     const router = makeRouter({ a, b }, [t]);
     expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'noMatch' });
   });
@@ -71,7 +71,7 @@ describe('TransitionRouter', () => {
   it('returns terminal when target is a TerminalState', () => {
     const a = new UserDefinedState(sid('a'));
     const term = new TerminalState(sid('term'));
-    const t = new Transition(tid('t1'), sid('a'), sid('term'));
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('term'));
     const router = makeRouter({ a, term }, [t]);
     expect(router.resolve(sid('a'), StateStatus.Ok))
       .toEqual({ kind: 'terminal', terminalId: sid('term') });
@@ -82,9 +82,9 @@ describe('TransitionRouter', () => {
     const ch = new ChoiceState(sid('ch'));
     const b  = new UserDefinedState(sid('b'));
     const c  = new UserDefinedState(sid('c'));
-    const t1 = new Transition(tid('t1'), sid('a'), sid('ch'));
-    const t2 = new Transition(tid('t2'), sid('ch'), sid('b'), StateStatus.Ok);
-    const t3 = new Transition(tid('t3'), sid('ch'), sid('c'), StateStatus.Error);
+    const t1 = new BasicTransition(tid('t1'), sid('a'), sid('ch'));
+    const t2 = new BasicTransition(tid('t2'), sid('ch'), sid('b'), StateStatus.Ok);
+    const t3 = new BasicTransition(tid('t3'), sid('ch'), sid('c'), StateStatus.Error);
     const router = makeRouter({ a, ch, b, c }, [t1, t2, t3]);
     expect(router.resolve(sid('a'), StateStatus.Ok)).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
     expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t3')] });
@@ -93,7 +93,7 @@ describe('TransitionRouter', () => {
   it('AnyStatus transition matches any incoming status', () => {
     const a = new UserDefinedState(sid('a'));
     const b = new UserDefinedState(sid('b'));
-    const t = new Transition(tid('t1'), sid('a'), sid('b'), StateStatus.AnyStatus);
+    const t = new BasicTransition(tid('t1'), sid('a'), sid('b'), StateStatus.AnyStatus);
     const router = makeRouter({ a, b }, [t]);
     expect(router.resolve(sid('a'), StateStatus.Error)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
     expect(router.resolve(sid('a'), StateStatus.Exception)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
@@ -103,8 +103,8 @@ describe('TransitionRouter', () => {
     const a  = new UserDefinedState(sid('a'));
     const b1 = new UserDefinedState(sid('b1'));
     const b2 = new UserDefinedState(sid('b2'));
-    const t1 = new Transition(tid('t1'), sid('a'), sid('b1'), StateStatus.Ok, 'planA');
-    const t2 = new Transition(tid('t2'), sid('a'), sid('b2'), StateStatus.Ok, 'planB');
+    const t1 = new BasicTransition(tid('t1'), sid('a'), sid('b1'), StateStatus.Ok, 'planA');
+    const t2 = new BasicTransition(tid('t2'), sid('a'), sid('b2'), StateStatus.Ok, 'planB');
     const router = makeRouter({ a, b1, b2 }, [t1, t2]);
     expect(router.resolve(sid('a'), StateStatus.Ok, 'planA')).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
     expect(router.resolve(sid('a'), StateStatus.Ok, 'planB')).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
@@ -114,8 +114,8 @@ describe('TransitionRouter', () => {
     const fork = new ForkState(sid('fork'));
     const b    = new UserDefinedState(sid('b'));
     const c    = new UserDefinedState(sid('c'));
-    const t1   = new Transition(tid('t1'), sid('fork'), sid('b'));
-    const t2   = new Transition(tid('t2'), sid('fork'), sid('c'));
+    const t1   = new BasicTransition(tid('t1'), sid('fork'), sid('b'));
+    const t2   = new BasicTransition(tid('t2'), sid('fork'), sid('c'));
     const router = makeRouter({ fork, b, c }, [t1, t2]);
     const result = router.resolve(sid('fork'), StateStatus.Ok);
     expect(result.kind).toBe('transition');

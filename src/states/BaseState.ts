@@ -1,9 +1,9 @@
-import type { StateId, TransitionId } from '../types';
-import type { StateType } from '@src/IState';
-import { StateStatus } from '@src/IState';
-import type { IState } from '@src/IState';
+import type { StateId, TransitionId } from '../model/types';
+import type { StateType } from '@src/model/State';
+import { StateStatus } from '@src/model/State';
+import type { State } from '@src/model/State';
 
-export abstract class BaseState implements IState {
+export abstract class BaseState implements State {
   readonly id: StateId;
   readonly type: StateType;
   

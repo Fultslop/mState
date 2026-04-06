@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import type { IStateMachine } from '@src/IStateMachine';
+import type { StateMachine } from '@src/model/StateMachine';
 import { MermaidParser } from './MermaidParser';
 import { ConfigParser } from './ConfigParser';
 
@@ -21,11 +21,11 @@ function extractBlocks(markdown: string): ExtractedBlock[] {
   return blocks;
 }
 
-function parseDiagrams(content: string): IStateMachine[] {
+function parseDiagrams(content: string): StateMachine[] {
   const blocks = extractBlocks(content);
   const parser = new MermaidParser();
   const cfgParse = new ConfigParser();
-  const machines: IStateMachine[] = [];
+  const machines: StateMachine[] = [];
 
   let pendingConfig: string | null = null;
 
@@ -49,18 +49,18 @@ function parseDiagrams(content: string): IStateMachine[] {
 }
 
 // Overload 1: inline diagram string (synchronous)
-export function createStateModel(diagram: string): IStateMachine[];
+export function createStateModel(diagram: string): StateMachine[];
 
 // Overload 2: file path (asynchronous)
 export function createStateModel(
   filePath: string,
   options: { fromFile: true },
-): Promise<IStateMachine[]>;
+): Promise<StateMachine[]>;
 
 export function createStateModel(
   input: string,
   options?: { fromFile: true },
-): IStateMachine[] | Promise<IStateMachine[]> {
+): StateMachine[] | Promise<StateMachine[]> {
   if (options?.fromFile) {
     return fs.promises.readFile(input, 'utf8').then((content) => {
       return parseDiagrams(content);
