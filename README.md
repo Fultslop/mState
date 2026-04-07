@@ -382,12 +382,10 @@ npm run build        # compile to dist/
 - [x] Parallel regions
 - [x] Mermaid `stateDiagram-v2` parser
 - [x] Structural validator
-- [ ] YAML-based machine definition
-- [ ] Snapshot / restore (pause and resume a running machine)
-- [ ] npm package publication
+- [ ] npm package publication v1
 
 ---
 
 ## License
 
-ISC
+MIT
