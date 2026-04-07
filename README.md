@@ -2,6 +2,10 @@
 
 A TypeScript library for building **hierarchical, event-driven state machines**. Define workflows declaratively, let mState drive execution, and focus your code on what each state actually does.
 
+## Project Background
+
+`mState` is part of an exploration into how far AI-assisted development can go when building a non-trivial tools, widgets and apps. This project has been built based on a human defined architecture, co-authored functional spec and a series of interface contracts, then implemented using using Claude, Qwen and to a lesser extent Gemini.
+
 ---
 
 ## Goals
