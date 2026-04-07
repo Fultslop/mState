@@ -61,6 +61,17 @@ export class TransitionRouter {
     status: StateStatus,
     exitCode?: string,
   ): RouteResult {
+    if (
+      state.type !== StateType.Choice &&
+      state.outgoing.size > 1
+    ) {
+      throw new SMRuntimeException(
+        `State '${state.id}' (${state.type}) has ` +
+          `${state.outgoing.size} outgoing transitions — ` +
+          'only Fork and Choice may have multiple outgoing transitions',
+      );
+    }
+
     const outgoing = Array.from(state.outgoing)
       .map((id) => this._transitions.get(id))
       .filter(

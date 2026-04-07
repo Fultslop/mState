@@ -164,6 +164,115 @@ describe('Validator', () => {
     extra.outgoing.add(tid('t1')); // re-use existing terminal transition (just add outgoing)
     expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
   });
+
+  // Rule 17: only Fork and Choice may have multiple outgoing transitions
+  it('rule 17: throws when a UserDefined state has more than one outgoing transition', () => {
+    const sr = new StateRegistry();
+    const tr = new TransitionRegistry();
+    const init = new InitialState(sid('init'));
+    const s1   = new UserDefinedState(sid('s1'));
+    const b    = new UserDefinedState(sid('b'));
+    const c    = new UserDefinedState(sid('c'));
+    const term = new TerminalState(sid('term'));
+    sr.add(init); sr.add(s1); sr.add(b); sr.add(c); sr.add(term);
+
+    const transitions = [
+      new BasicTransition(tid('t0'), sid('init'), sid('s1')),
+      new BasicTransition(tid('t1'), sid('s1'),   sid('b'), StateStatus.Ok),
+      new BasicTransition(tid('t2'), sid('s1'),   sid('c'), StateStatus.Error), // second outgoing on s1
+      new BasicTransition(tid('t3'), sid('b'),    sid('term')),
+      new BasicTransition(tid('t4'), sid('c'),    sid('term')),
+    ];
+    for (const t of transitions) {
+      tr.add(t);
+      sr.get(t.fromStateId)!.outgoing.add(t.id);
+      sr.get(t.toStateId)!.incoming.add(t.id);
+    }
+
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
+  });
+
+  it('rule 17: throws when an Initial state has more than one outgoing transition', () => {
+    const sr = new StateRegistry();
+    const tr = new TransitionRegistry();
+    const init = new InitialState(sid('init'));
+    const a    = new UserDefinedState(sid('a'));
+    const b    = new UserDefinedState(sid('b'));
+    const term = new TerminalState(sid('term'));
+    sr.add(init); sr.add(a); sr.add(b); sr.add(term);
+
+    const transitions = [
+      new BasicTransition(tid('t0'), sid('init'), sid('a')),
+      new BasicTransition(tid('t1'), sid('init'), sid('b')), // second outgoing on init
+      new BasicTransition(tid('t2'), sid('a'),    sid('term')),
+      new BasicTransition(tid('t3'), sid('b'),    sid('term')),
+    ];
+    for (const t of transitions) {
+      tr.add(t);
+      sr.get(t.fromStateId)!.outgoing.add(t.id);
+      sr.get(t.toStateId)!.incoming.add(t.id);
+    }
+
+    expect(() => validateStateMachine(sr, tr)).toThrow(SMValidationException);
+  });
+
+  it('rule 17: Fork with multiple outgoing transitions passes validation', () => {
+    const sr = new StateRegistry();
+    const tr = new TransitionRegistry();
+    const init = new InitialState(sid('init'));
+    const fork = new ForkState(sid('fork'));
+    const a    = new UserDefinedState(sid('a'));
+    const b    = new UserDefinedState(sid('b'));
+    const join = new BasicJoinState(sid('join'));
+    const out  = new UserDefinedState(sid('out'));
+    const term = new TerminalState(sid('term'));
+    sr.add(init); sr.add(fork); sr.add(a); sr.add(b); sr.add(join); sr.add(out); sr.add(term);
+
+    const transitions = [
+      new BasicTransition(tid('t0'), sid('init'), sid('fork')),
+      new BasicTransition(tid('t1'), sid('fork'), sid('a')),
+      new BasicTransition(tid('t2'), sid('fork'), sid('b')),
+      new BasicTransition(tid('t3'), sid('a'),    sid('join')),
+      new BasicTransition(tid('t4'), sid('b'),    sid('join')),
+      new BasicTransition(tid('t5'), sid('join'), sid('out')),
+      new BasicTransition(tid('t6'), sid('out'),  sid('term')),
+    ];
+    for (const t of transitions) {
+      tr.add(t);
+      sr.get(t.fromStateId)!.outgoing.add(t.id);
+      sr.get(t.toStateId)!.incoming.add(t.id);
+    }
+
+    expect(() => validateStateMachine(sr, tr)).not.toThrow();
+  });
+
+  it('rule 17: Choice with multiple outgoing transitions passes validation', () => {
+    const sr = new StateRegistry();
+    const tr = new TransitionRegistry();
+    const init = new InitialState(sid('init'));
+    const s1   = new UserDefinedState(sid('s1'));
+    const ch   = new ChoiceState(sid('ch'));
+    const b    = new UserDefinedState(sid('b'));
+    const c    = new UserDefinedState(sid('c'));
+    const term = new TerminalState(sid('term'));
+    sr.add(init); sr.add(s1); sr.add(ch); sr.add(b); sr.add(c); sr.add(term);
+
+    const transitions = [
+      new BasicTransition(tid('t0'), sid('init'), sid('s1')),
+      new BasicTransition(tid('t1'), sid('s1'),   sid('ch')),
+      new BasicTransition(tid('t2'), sid('ch'),   sid('b'), StateStatus.Ok),
+      new BasicTransition(tid('t3'), sid('ch'),   sid('c'), StateStatus.Error),
+      new BasicTransition(tid('t4'), sid('b'),    sid('term')),
+      new BasicTransition(tid('t5'), sid('c'),    sid('term')),
+    ];
+    for (const t of transitions) {
+      tr.add(t);
+      sr.get(t.fromStateId)!.outgoing.add(t.id);
+      sr.get(t.toStateId)!.incoming.add(t.id);
+    }
+
+    expect(() => validateStateMachine(sr, tr)).not.toThrow();
+  });
 });
 
 describe('parallel validation', () => {
@@ -218,7 +327,10 @@ describe('parallel validation', () => {
   });
 
   it('P3: cross-region transition throws', () => {
-    const { sm, b, r1, r2 } = buildValidParallel();
+    const { sm, b, r1 } = buildValidParallel();
+    // Replace rs1 → r1.terminal with rs1 → rs2 (crosses to region 2).
+    // Deletion keeps rs1 at exactly one outgoing so Rule 17 doesn't fire first.
+    sm.deleteTransition(tid('rt2'));
     const cross = b.createTransition(tid('cross'), sid('rs1'), sid('rs2'));
     r1.addTransition(cross);
     expect(() => sm.validate()).toThrow(/P3.*cross.*region/i);
@@ -226,17 +338,21 @@ describe('parallel validation', () => {
 
   it('P4: parallel directly followed by Choice throws', () => {
     const { sm, b, ps } = buildValidParallel();
+    // Replace ps → term with ps → ch → term so ps keeps one outgoing (Rule 17
+    // won't fire) while the parallel → choice constraint (P4) is still violated.
+    sm.deleteTransition(tid('t1'));
     const ch = b.createChoice(sid('ch1'));
-    const term2 = b.createTerminal(sid('term2'));
-    b.createTransition(tid('bad'), ps.id, ch.id);
-    b.createTransition(tid('ch_out'), ch.id, term2.id);
+    b.createTransition(tid('bad'),    ps.id, ch.id);
+    b.createTransition(tid('ch_out'), ch.id, sid('term') as StateId);
     expect(() => sm.validate()).toThrow(/P4.*choice/i);
   });
 
   it('P5: region state transitioning to outer terminal throws', () => {
-    const { sm, b, r1 } = buildValidParallel();
+    const { sm, b } = buildValidParallel();
+    // Replace rs1 → r1.terminal with rs1 → outer term so rs1 keeps one outgoing
+    // (Rule 17 won't fire) while the outer-terminal bypass (P5) is still violated.
+    sm.deleteTransition(tid('rt2'));
     b.createTransition(tid('bypass'), sid('rs1'), sid('term'));
-    r1.addState(sm.getState(sid('rs1'))!);
     expect(() => sm.validate()).toThrow(/P5.*outer terminal/i);
   });
 });

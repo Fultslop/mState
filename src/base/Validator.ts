@@ -167,6 +167,29 @@ function validateRule5(
   }
 }
 
+function validateRule17(allStates: readonly State[]): void {
+  const singleOutgoingTypes = new Set([
+    StateType.Initial,
+    StateType.UserDefined,
+    StateType.Join,
+    StateType.Group,
+    StateType.Parallel,
+    StateType.Terminal,
+  ]);
+  for (const state of allStates) {
+    if (
+      singleOutgoingTypes.has(state.type) &&
+      state.outgoing.size > 1
+    ) {
+      throw new SMValidationException(
+        `Rule 17: state '${state.id}' (${state.type}) has ` +
+          `${state.outgoing.size} outgoing transitions — ` +
+          'only Fork and Choice may have multiple outgoing transitions',
+      );
+    }
+  }
+}
+
 function validateRule16(
   allTransitions: readonly Transition[],
 ): void {
@@ -564,6 +587,7 @@ export function validateStateMachine(
   const initial = validateRule1(topLevel);
   validateRule5(allTransitions, states);
   validateRule16(allTransitions);
+  validateRule17(allStatesList);
   validateReachability(
     initial,
     topLevel,

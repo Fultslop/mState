@@ -99,15 +99,27 @@ describe('TransitionRouter', () => {
     expect(router.resolve(sid('a'), StateStatus.Exception)).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
   });
 
-  it('resolves status+exitCode combination', () => {
+  it('resolves status+exitCode combination via a Choice node', () => {
     const a  = new UserDefinedState(sid('a'));
+    const ch = new ChoiceState(sid('ch'));
     const b1 = new UserDefinedState(sid('b1'));
     const b2 = new UserDefinedState(sid('b2'));
-    const t1 = new BasicTransition(tid('t1'), sid('a'), sid('b1'), StateStatus.Ok, 'planA');
-    const t2 = new BasicTransition(tid('t2'), sid('a'), sid('b2'), StateStatus.Ok, 'planB');
-    const router = makeRouter({ a, b1, b2 }, [t1, t2]);
+    const t0 = new BasicTransition(tid('t0'), sid('a'),  sid('ch'));
+    const t1 = new BasicTransition(tid('t1'), sid('ch'), sid('b1'), StateStatus.Ok, 'planA');
+    const t2 = new BasicTransition(tid('t2'), sid('ch'), sid('b2'), StateStatus.Ok, 'planB');
+    const router = makeRouter({ a, ch, b1, b2 }, [t0, t1, t2]);
     expect(router.resolve(sid('a'), StateStatus.Ok, 'planA')).toEqual({ kind: 'transition', transitionIds: [tid('t1')] });
     expect(router.resolve(sid('a'), StateStatus.Ok, 'planB')).toEqual({ kind: 'transition', transitionIds: [tid('t2')] });
+  });
+
+  it('throws SMRuntimeException when a non-Fork/Choice state has multiple outgoing transitions', () => {
+    const a  = new UserDefinedState(sid('a'));
+    const b  = new UserDefinedState(sid('b'));
+    const c  = new UserDefinedState(sid('c'));
+    const t1 = new BasicTransition(tid('t1'), sid('a'), sid('b'), StateStatus.Ok);
+    const t2 = new BasicTransition(tid('t2'), sid('a'), sid('c'), StateStatus.Error);
+    const router = makeRouter({ a, b, c }, [t1, t2]);
+    expect(() => router.resolve(sid('a'), StateStatus.Ok)).toThrow(SMRuntimeException);
   });
 
   it('Fork returns ALL outgoing transitions', () => {
