@@ -1,6 +1,6 @@
 import { BasicStateMachine } from '@src/base/BasicStateMachine';
 import { StateMachineBuilder } from '@src/base/StateMachineBuilder';
-import { StateStatus, StateType } from '@src/model/State';
+import { StateStatus } from '@src/model/State';
 import type { StateMachineId, StateId, TransitionId, StateStartEvent, StateStoppedEvent, StateMachineStoppedEvent } from '@src/model/types';
 
 const smid = (s: string) => s as StateMachineId;

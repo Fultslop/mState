@@ -97,6 +97,12 @@ describe('compareStates', () => {
     expect(compareStates(a, b)).toBe(false);
   });
 
+  it('returns false when config has a key with undefined value vs missing key', () => {
+    const a = makeState({ id: 'a', config: { x: undefined } });
+    const b = makeState({ id: 'a', config: {} });
+    expect(compareStates(a, b)).toBe(false);
+  });
+
   it('does not compare stateStatus', () => {
     const a = makeState({ id: 'a' });
     const b = makeState({ id: 'a' });

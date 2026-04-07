@@ -19,43 +19,71 @@ function setsEqual<T>(setA: Set<T>, setB: Set<T>): boolean {
   return result;
 }
 
-function sortKeys(obj: unknown): unknown {
-  let result: unknown = obj;
+type CompareFunc = (valueA: unknown, valueB: unknown) => boolean;
 
-  const isObject =
-    obj !== null &&
-    typeof obj === TYPE_OBJECT &&
-    !Array.isArray(obj);
-  if (isObject) {
-    result = Object.fromEntries(
-      Object.entries(obj as Record<string, unknown>)
-        .sort(
-          ([keyA], [keyB]) => keyA.localeCompare(keyB),
-        )
-        .map(([key, value]) => [key, sortKeys(value)]),
-    );
+function arraysDeepEqual(
+  arrA: unknown[],
+  arrB: unknown[],
+  compareFunc: CompareFunc,
+): boolean {
+  if (arrA.length !== arrB.length) {
+    return false;
   }
-  return result;
+  return arrA.every((value, index) => compareFunc(value, arrB[index]));
+}
+
+function objectsDeepEqual(
+  objA: Record<string, unknown>,
+  objB: Record<string, unknown>,
+  compareFunc: CompareFunc,
+): boolean {
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+  return keysA.every(
+    (key) => Object.prototype.hasOwnProperty.call(objB, key) && compareFunc(objA[key], objB[key]),
+  );
 }
 
 function deepEqual(
   valueA: unknown,
   valueB: unknown,
 ): boolean {
-  let result = false;
   if (valueA === valueB) {
-    result = true;
-  } else if (
-    valueA !== undefined &&
-    valueB !== undefined &&
-    valueA !== null &&
-    valueB !== null
-  ) {
-    result =
-      JSON.stringify(sortKeys(valueA)) ===
-      JSON.stringify(sortKeys(valueB));
+    return true;
   }
-  return result;
+  if (valueA === undefined) {
+    return false;
+  }
+  if (valueB === undefined) {
+    return false;
+  }
+  if (valueA === null) {
+    return false;
+  }
+  if (valueB === null) {
+    return false;
+  }
+  if (typeof valueA !== TYPE_OBJECT) {
+    return false;
+  }
+  if (typeof valueB !== TYPE_OBJECT) {
+    return false;
+  }
+  const isArrayA = Array.isArray(valueA);
+  if (isArrayA !== Array.isArray(valueB)) {
+    return false;
+  }
+  if (isArrayA) {
+    return arraysDeepEqual(valueA as unknown[], valueB as unknown[], deepEqual);
+  }
+  return objectsDeepEqual(
+    valueA as Record<string, unknown>,
+    valueB as Record<string, unknown>,
+    deepEqual,
+  );
 }
 
 export function compareStates(
@@ -109,24 +137,20 @@ function hasSameStates(
   stateMachineA: StateMachine,
   stateMachineB: StateMachine,
 ): boolean {
-  const aMatchesB = stateMachineA.getStateIds().every((id) => {
+  return stateMachineA.getStateIds().every((id) => {
     const stateB = stateMachineB.getState(id);
     return (
       stateB !== undefined &&
       compareStates(stateMachineA.getState(id)!, stateB)
     );
   });
-  const bMatchesA = stateMachineB.getStateIds().every((id) =>
-    stateMachineA.getState(id) !== undefined,
-  );
-  return aMatchesB && bMatchesA;
 }
 
 function hasSameTransitions(
   stateMachineA: StateMachine,
   stateMachineB: StateMachine,
 ): boolean {
-  const aMatchesB = stateMachineA
+  return stateMachineA
     .getTransitionIds()
     .every((id) => {
       const transitionB = stateMachineB.getTransition(id);
@@ -138,12 +162,6 @@ function hasSameTransitions(
         )
       );
     });
-  const bMatchesA = stateMachineB
-    .getTransitionIds()
-    .every((id) =>
-      stateMachineA.getTransition(id) !== undefined,
-    );
-  return aMatchesB && bMatchesA;
 }
 
 export function compareStateMachines(
